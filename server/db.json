@@ -1,0 +1,266 @@
+{
+  "users": [
+    {
+      "id": "u1",
+      "email": "admin@back.com",
+      "password": "Test@123",
+      "name": "Terminal Admin",
+      "role": "admin",
+      "status": "active",
+      "createdAt": "2026-07-09T16:53:32.269Z",
+      "riskSettings": {
+        "defaultLotSize": 1,
+        "dailyRiskLimit": 10000,
+        "stopLossPct": 2,
+        "targetPct": 4,
+        "maxOpenTrades": 5
+      }
+    },
+    {
+      "id": "u2",
+      "email": "user@back.com",
+      "password": "Test@123",
+      "name": "Mani Sharma",
+      "role": "user",
+      "status": "active",
+      "createdAt": "2026-07-12T16:53:32.269Z",
+      "lotMultiplier": 1,
+      "riskSettings": {
+        "defaultLotSize": 1,
+        "dailyRiskLimit": 10000,
+        "stopLossPct": 2,
+        "targetPct": 4,
+        "maxOpenTrades": 5
+      }
+    },
+    {
+      "id": "u1784048168066",
+      "name": "Retail Test Trader",
+      "email": "trader_1784048168065@back.com",
+      "password": "Test@123",
+      "role": "user",
+      "status": "active",
+      "createdAt": "2026-07-14T16:56:08.066Z",
+      "lotMultiplier": 3.5,
+      "planId": "plan_vip",
+      "riskSettings": {
+        "defaultLotSize": 3,
+        "dailyRiskLimit": 15000,
+        "stopLossPct": 1.5,
+        "targetPct": 3,
+        "maxOpenTrades": 4
+      }
+    },
+    {
+      "id": "u1784055854898",
+      "name": "mani",
+      "email": "mraj14558@gmail.com",
+      "password": "Test@123",
+      "role": "user",
+      "status": "active",
+      "createdAt": "2026-07-14T19:04:14.898Z",
+      "lotMultiplier": 1
+    }
+  ],
+  "credentials": [],
+  "strategies": [
+    {
+      "id": "strat_macd",
+      "name": "MACD Crossover Bot",
+      "instrument": "NIFTY 50",
+      "type": "Momentum",
+      "status": "inactive",
+      "capital": 50000,
+      "pnl": 0,
+      "tradesCount": 0,
+      "settings": {
+        "shortPeriod": 12,
+        "longPeriod": 26,
+        "signalPeriod": 9
+      }
+    },
+    {
+      "id": "strat_rsi",
+      "name": "RSI Mean Reversion",
+      "instrument": "RELIANCE",
+      "type": "Mean Reversion",
+      "status": "inactive",
+      "capital": 100000,
+      "pnl": 0,
+      "tradesCount": 0,
+      "settings": {
+        "rsiOversold": 30,
+        "rsiOverbought": 70,
+        "period": 14
+      }
+    },
+    {
+      "id": "strat_grid",
+      "name": "Options Grid Scalper",
+      "instrument": "BANKNIFTY",
+      "type": "Grid Scalping",
+      "status": "inactive",
+      "capital": 75000,
+      "pnl": 0,
+      "tradesCount": 0,
+      "settings": {
+        "gridLevels": 8,
+        "upperRange": 53000,
+        "lowerRange": 52000
+      }
+    },
+    {
+      "id": "strat_arb",
+      "name": "Futures Cash-Arb Bot",
+      "instrument": "TCS (Futures vs Cash)",
+      "type": "Arbitrage",
+      "status": "inactive",
+      "capital": 150000,
+      "pnl": 0,
+      "tradesCount": 0,
+      "settings": {
+        "minSpreadPct": 0.35
+      }
+    }
+  ],
+  "trades": [],
+  "logs": [
+    {
+      "timestamp": "2026-07-14T16:56:08.074Z",
+      "type": "success",
+      "source": "Admin",
+      "message": "Assigned subscription plan VIP Unlimited to user: Retail Test Trader"
+    },
+    {
+      "timestamp": "2026-07-14T16:56:08.104Z",
+      "type": "info",
+      "source": "System",
+      "message": "Risk Settings updated for Retail Test Trader: LotSize=3, SL=1.5%, Target=3%"
+    },
+    {
+      "timestamp": "2026-07-14T16:56:08.112Z",
+      "type": "success",
+      "source": "Zerodha Kite",
+      "message": "Successfully connected Demat API for client: AB1234 (Mani Sharma)"
+    },
+    {
+      "timestamp": "2026-07-14T16:56:08.121Z",
+      "type": "warning",
+      "source": "Admin",
+      "message": "Reset API credentials and connection for user: Retail Test Trader"
+    },
+    {
+      "timestamp": "2026-07-14T17:11:29.757Z",
+      "type": "error",
+      "source": "Emergency Stop",
+      "message": "Emergency Square Off Triggered by Admin. Terminated all active trades!"
+    },
+    {
+      "timestamp": "2026-07-14T17:11:34.208Z",
+      "type": "error",
+      "source": "Emergency Stop",
+      "message": "Emergency Square Off Triggered by Admin. Terminated all active trades!"
+    }
+  ],
+  "openPositions": [],
+  "subscriptionPlans": [
+    {
+      "id": "plan_basic",
+      "name": "Basic Plan",
+      "price": 1999,
+      "durationDays": 30,
+      "maxLotLimit": 2,
+      "maxCapital": 100000,
+      "maxOpenPositions": 2,
+      "status": "active"
+    },
+    {
+      "id": "plan_pro",
+      "name": "Pro Scalper",
+      "price": 4999,
+      "durationDays": 30,
+      "maxLotLimit": 10,
+      "maxCapital": 500000,
+      "maxOpenPositions": 5,
+      "status": "active"
+    },
+    {
+      "id": "plan_vip",
+      "name": "VIP Unlimited",
+      "price": 9999,
+      "durationDays": 90,
+      "maxLotLimit": 50,
+      "maxCapital": 2500000,
+      "maxOpenPositions": 15,
+      "status": "active"
+    }
+  ],
+  "supportedBrokers": [
+    {
+      "id": "zerodha",
+      "name": "Zerodha Kite",
+      "enabled": true,
+      "status": "active"
+    },
+    {
+      "id": "angelone",
+      "name": "Angel One",
+      "enabled": true,
+      "status": "active"
+    },
+    {
+      "id": "upstox",
+      "name": "Upstox",
+      "enabled": true,
+      "status": "active"
+    },
+    {
+      "id": "dhan",
+      "name": "Dhan",
+      "enabled": false,
+      "status": "inactive"
+    }
+  ],
+  "payments": [
+    {
+      "id": "PAY101",
+      "userEmail": "user@back.com",
+      "planName": "Pro Scalper",
+      "amount": 4999,
+      "status": "success",
+      "date": "2026-07-11T16:53:32.269Z"
+    },
+    {
+      "id": "PAY102",
+      "userEmail": "admin@back.com",
+      "planName": "VIP Unlimited",
+      "amount": 9999,
+      "status": "success",
+      "date": "2026-07-09T16:53:32.269Z"
+    }
+  ],
+  "signals": [
+    {
+      "id": "SIG101",
+      "instrument": "NIFTY 50",
+      "type": "BUY",
+      "price": 24350.25,
+      "time": "2026-07-14T16:53:32.269Z",
+      "status": "executed"
+    }
+  ],
+  "auditLogs": [
+    {
+      "timestamp": "2026-07-14T16:48:32.269Z",
+      "type": "auth",
+      "source": "admin@back.com",
+      "message": "Admin login from IP 192.168.1.1"
+    },
+    {
+      "timestamp": "2026-07-14T16:43:32.269Z",
+      "type": "system",
+      "source": "System",
+      "message": "Weekly reports compiled successfully"
+    }
+  ]
+}
