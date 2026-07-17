@@ -458,6 +458,14 @@ const URL_TO_TAB: Record<string, string> = Object.fromEntries(
   Object.entries(TAB_TO_URL).map(([k, v]) => [v, k])
 );
 
+const API_BASE_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+  ? 'http://localhost:5000'
+  : 'https://black-rox.onrender.com';
+
+const WS_BASE_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+  ? 'ws://localhost:5000'
+  : 'wss://black-rox.onrender.com';
+
 export function App() {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
@@ -762,7 +770,7 @@ export function App() {
     }
 
     try {
-      const response = await fetch('http://localhost:5000/api/user/risk-settings', {
+      const response = await fetch(`${API_BASE_URL}/api/user/risk-settings`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -802,7 +810,7 @@ export function App() {
     }
 
     try {
-      const response = await fetch('http://localhost:5000/api/user/settings', {
+      const response = await fetch(`${API_BASE_URL}/api/user/settings`, {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',
@@ -865,7 +873,7 @@ export function App() {
     }
 
     try {
-      const response = await fetch('http://localhost:5000/api/admin/subscription-plans', {
+      const response = await fetch(`${API_BASE_URL}/api/admin/subscription-plans`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -895,7 +903,7 @@ export function App() {
     }
 
     try {
-      const response = await fetch('http://localhost:5000/api/admin/subscription-plans/delete', {
+      const response = await fetch(`${API_BASE_URL}/api/admin/subscription-plans/delete`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -960,7 +968,7 @@ export function App() {
     }
 
     try {
-      const response = await fetch('http://localhost:5000/api/admin/subscription-plans/update', {
+      const response = await fetch(`${API_BASE_URL}/api/admin/subscription-plans/update`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -989,7 +997,7 @@ export function App() {
     }
 
     try {
-      const response = await fetch('http://localhost:5000/api/admin/brokers/toggle', {
+      const response = await fetch(`${API_BASE_URL}/api/admin/brokers/toggle`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -1022,7 +1030,7 @@ export function App() {
     }
 
     try {
-      const response = await fetch('http://localhost:5000/api/admin/brokers/update', {
+      const response = await fetch(`${API_BASE_URL}/api/admin/brokers/update`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -1053,7 +1061,7 @@ export function App() {
     }
 
     try {
-      const response = await fetch('http://localhost:5000/api/admin/brokers/delete', {
+      const response = await fetch(`${API_BASE_URL}/api/admin/brokers/delete`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -1084,7 +1092,7 @@ export function App() {
     }
 
     try {
-      const response = await fetch('http://localhost:5000/api/admin/signals/delete', {
+      const response = await fetch(`${API_BASE_URL}/api/admin/signals/delete`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -1132,7 +1140,7 @@ export function App() {
     }
 
     try {
-      const response = await fetch('http://localhost:5000/api/admin/signals', {
+      const response = await fetch(`${API_BASE_URL}/api/admin/signals`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -1159,7 +1167,7 @@ export function App() {
     }
 
     try {
-      const response = await fetch('http://localhost:5000/api/admin/square-off', {
+      const response = await fetch(`${API_BASE_URL}/api/admin/square-off`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${authToken}`
@@ -1184,7 +1192,7 @@ export function App() {
       return;
     }
     try {
-      const response = await fetch('http://localhost:5000/api/admin/users/reset-api', {
+      const response = await fetch(`${API_BASE_URL}/api/admin/users/reset-api`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -1213,7 +1221,7 @@ export function App() {
       return;
     }
     try {
-      const response = await fetch('http://localhost:5000/api/admin/users/assign-plan', {
+      const response = await fetch(`${API_BASE_URL}/api/admin/users/assign-plan`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -1266,7 +1274,7 @@ export function App() {
 
   const fetchUsers = async () => {
     try {
-      const response = await fetch('http://localhost:5000/api/admin/users', {
+      const response = await fetch(`${API_BASE_URL}/api/admin/users`, {
         headers: { 'Authorization': `Bearer ${authToken}` }
       });
       if (response.ok) {
@@ -1295,7 +1303,7 @@ export function App() {
     if (!newUserName || !newUserEmail || !newUserPassword || !newUserRole) return;
 
     try {
-      const response = await fetch('http://localhost:5000/api/admin/users', {
+      const response = await fetch(`${API_BASE_URL}/api/admin/users`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -1346,7 +1354,7 @@ export function App() {
     }
 
     try {
-      const response = await fetch('http://localhost:5000/api/admin/users/toggle', {
+      const response = await fetch(`${API_BASE_URL}/api/admin/users/toggle`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -1375,7 +1383,7 @@ export function App() {
     if (!selectedUserForEdit) return;
 
     try {
-      const response = await fetch('http://localhost:5000/api/admin/users/update', {
+      const response = await fetch(`${API_BASE_URL}/api/admin/users/update`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -1419,7 +1427,7 @@ export function App() {
     }
 
     try {
-      const response = await fetch('http://localhost:5000/api/admin/users/delete', {
+      const response = await fetch(`${API_BASE_URL}/api/admin/users/delete`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -1483,7 +1491,7 @@ export function App() {
     const connectWS = () => {
       setIsConnecting(true);
       // Backend is on port 5000 - pass token in query parameter for security verification
-      ws = new WebSocket(`ws://localhost:5000?token=${authToken}`);
+      ws = new WebSocket(`${WS_BASE_URL}?token=${authToken}`);
 
       ws.onopen = () => {
         setIsConnected(true);
@@ -1672,7 +1680,7 @@ export function App() {
     setAuthError('');
 
     try {
-      const response = await fetch('http://localhost:5000/api/auth/login', {
+      const response = await fetch(`${API_BASE_URL}/api/auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: authEmail, password: authPassword })
@@ -1737,7 +1745,7 @@ export function App() {
   // API Call: Toggle Strategy status
   const handleToggleStrategy = async (id: string) => {
     try {
-      const response = await fetch('http://localhost:5000/api/strategies/toggle', {
+      const response = await fetch(`${API_BASE_URL}/api/strategies/toggle`, {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',
@@ -1806,7 +1814,7 @@ export function App() {
     }
 
     try {
-      const response = await fetch('http://localhost:5000/api/credentials', {
+      const response = await fetch(`${API_BASE_URL}/api/credentials`, {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',
@@ -1848,7 +1856,7 @@ export function App() {
   // API Call: Delete API Credentials
   const handleDeleteCredential = async (id: string) => {
     try {
-      const response = await fetch(`http://localhost:5000/api/credentials/${id}`, {
+      const response = await fetch(`${API_BASE_URL}/api/credentials/${id}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${authToken}`
