@@ -1927,17 +1927,17 @@ export function App() {
 
             {/* Brand Logo */}
             <div className="flex flex-col items-start">
-              <div className="w-14 h-14 bg-primary flex items-center justify-center text-primary-foreground font-black text-3xl select-none rounded-none shadow-md">
+              <div className="w-10 h-10 bg-primary flex items-center justify-center text-primary-foreground font-black text-xl select-none rounded-none shadow-sm">
                 B
               </div>
-              <span className="text-[10px] tracking-[0.25em] font-extrabold text-primary mt-2 select-none">
+              <span className="text-[9px] tracking-[0.25em] font-bold text-primary mt-2 select-none">
                 BLACKROX
               </span>
             </div>
-
+ 
             {/* Login Center Form */}
-            <div className="w-full max-w-[360px] mx-auto my-auto py-12 flex flex-col justify-center">
-              <h2 className="text-3xl font-extrabold tracking-tight text-foreground mb-1">
+            <div className="w-full max-w-[320px] mx-auto my-auto py-12 flex flex-col justify-center">
+              <h2 className="text-2xl font-extrabold tracking-tight text-foreground mb-1">
                 Login to your account
               </h2>
               <p className="text-sm text-muted-foreground mb-8">
@@ -1961,7 +1961,7 @@ export function App() {
                     placeholder="m@example.com"
                     value={authEmail}
                     onChange={(e) => setAuthEmail(e.target.value)}
-                    className="w-full bg-background border border-border focus:border-primary focus:ring-1 focus:ring-primary rounded-none px-4 py-3 text-sm text-foreground outline-none transition-all placeholder:text-muted-foreground/50"
+                    className="w-full bg-background border border-border focus:border-primary focus:ring-1 focus:ring-primary rounded-none px-4 py-2 text-sm text-foreground outline-none transition-all placeholder:text-muted-foreground/50"
                     required
                   />
                 </div>
@@ -1987,7 +1987,7 @@ export function App() {
                     placeholder="••••••••"
                     value={authPassword}
                     onChange={(e) => setAuthPassword(e.target.value)}
-                    className="w-full bg-background border border-border focus:border-primary focus:ring-1 focus:ring-primary rounded-none px-4 py-3 text-sm text-foreground outline-none transition-all placeholder:text-muted-foreground/50"
+                    className="w-full bg-background border border-border focus:border-primary focus:ring-1 focus:ring-primary rounded-none px-4 py-2 text-sm text-foreground outline-none transition-all placeholder:text-muted-foreground/50"
                     required
                   />
                 </div>
@@ -2013,7 +2013,7 @@ export function App() {
                 <button
                   type="submit"
                   disabled={isAuthLoading}
-                  className="w-full bg-primary hover:bg-primary/95 text-primary-foreground font-bold py-3.5 px-4 transition-colors select-none cursor-pointer flex items-center justify-center gap-2 rounded-none mt-6 shadow-lg shadow-primary/10"
+                  className="w-full bg-primary hover:bg-primary/95 text-primary-foreground font-bold py-2.5 px-4 transition-colors select-none cursor-pointer flex items-center justify-center gap-2 rounded-none mt-6 shadow-lg shadow-primary/10"
                 >
                   {isAuthLoading ? (
                     <div className="w-5 h-5 border-2 border-primary-foreground/30 border-t-primary-foreground rounded-full animate-spin" />
@@ -2048,18 +2048,38 @@ export function App() {
             </div>
           </div>
 
-          {/* Right panel: Modern Office Image Background */}
-          <div className="col-span-1 hidden lg:block relative h-screen overflow-hidden bg-muted">
-            <img
-              src="/office_workspace.png"
-              alt="BlackRox Trading Workspace"
-              className="w-full h-full object-cover select-none"
-            />
-            {/* Ambient Overlay to blend image nicely */}
-            <div className="absolute inset-0 bg-gradient-to-tr from-background/10 to-transparent pointer-events-none" />
-            {isDarkMode && (
-              <div className="absolute inset-0 bg-neutral-950/45 mix-blend-multiply pointer-events-none" />
-            )}
+          {/* Right panel: Vibrant Brand Gradient & Minimal Glass Logo */}
+          <div className="col-span-1 hidden lg:flex relative h-screen overflow-hidden bg-gradient-to-tr from-[#1e1b4b] via-[#581c87] to-[#9d174d] flex-col items-center justify-center p-12 border-l border-white/10">
+            {/* Soft decorative light flares */}
+            <div className="absolute top-0 right-0 w-[400px] h-[400px] rounded-full bg-white/10 blur-[80px] pointer-events-none" />
+            <div className="absolute bottom-0 left-0 w-[300px] h-[300px] rounded-full bg-primary/20 blur-[60px] pointer-events-none" />
+
+            {/* Glowing Core Brand Emblem */}
+            <div className="relative flex items-center justify-center w-72 h-72 z-10">
+              {/* Concentric Glass Rings */}
+              <div className="absolute inset-0 rounded-full border border-white/10 bg-white/[0.02] backdrop-blur-[2px]" />
+              <div className="absolute inset-6 rounded-full border border-white/15 bg-white/[0.03] backdrop-blur-[4px]" />
+              <div className="absolute inset-12 rounded-full border border-white/20 bg-white/[0.04] backdrop-blur-[6px]" />
+
+              {/* Floating Solid White Logo */}
+              <div className="absolute w-28 h-28 bg-white text-[#581c87] flex items-center justify-center shadow-[0_15px_40px_rgba(0,0,0,0.3)] hover:scale-105 transition-transform duration-500 rounded-none">
+                <span className="text-[#9d174d] text-6xl font-black font-sans tracking-tighter select-none">B</span>
+              </div>
+            </div>
+
+            {/* Platform Title */}
+            <div className="mt-8 text-center space-y-1.5 z-10">
+              <h3 className="text-xl font-black tracking-widest text-white uppercase font-sans">BLACKROX</h3>
+              <p className="text-[10px] font-mono tracking-[0.25em] text-white/70 uppercase select-none">
+                QUANTITATIVE TRADING PLATFORM
+              </p>
+            </div>
+
+            {/* Bottom Info HUD */}
+            <div className="absolute bottom-6 left-12 right-12 flex justify-between items-center text-[9px] font-mono text-white/40 select-none z-10">
+              <span>SECURE NODE CONNECTION</span>
+              <span>EST. 2026</span>
+            </div>
           </div>
         </div>
       </div>
