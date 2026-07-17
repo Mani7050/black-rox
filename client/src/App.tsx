@@ -158,6 +158,7 @@ interface User {
   status?: 'active' | 'suspended';
   createdAt?: string;
   lastLogin?: string;
+  planId?: string;
   riskSettings?: {
     defaultLotSize: number;
     dailyRiskLimit: number;
@@ -547,6 +548,8 @@ export function App() {
   const [authPassword, setAuthPassword] = useState('');
   const [isAuthLoading, setIsAuthLoading] = useState(false);
   const [authError, setAuthError] = useState('');
+  const [authMode, setAuthMode] = useState<'login' | 'signup'>('login');
+  const [authName, setAuthName] = useState('');
   const [pnlHistory, setPnlHistory] = useState<{ time: string; pnl: number }[]>([
     { time: '15:10', pnl: 1000 },
     { time: '15:15', pnl: 1100 },
@@ -655,7 +658,12 @@ export function App() {
   const [isUpdatingRiskSettings, setIsUpdatingRiskSettings] = useState(false);
 
   // New Admin & User Dashboard tabs states
-  const [plans, setPlans] = useState<SubscriptionPlan[]>([]);
+  const [plans, setPlans] = useState<SubscriptionPlan[]>([
+    { id: 'plan_trial', name: '7-Day Trial', price: 0, durationDays: 7, maxLotLimit: 1, maxCapital: 10000, maxOpenPositions: 1, status: 'active' },
+    { id: 'plan_basic', name: 'Basic Plan', price: 1999, durationDays: 30, maxLotLimit: 2, maxCapital: 100000, maxOpenPositions: 2, status: 'active' },
+    { id: 'plan_pro', name: 'Pro Scalper', price: 4999, durationDays: 30, maxLotLimit: 10, maxCapital: 500000, maxOpenPositions: 5, status: 'active' },
+    { id: 'plan_vip', name: 'VIP Unlimited', price: 9999, durationDays: 90, maxLotLimit: 50, maxCapital: 2500000, maxOpenPositions: 15, status: 'active' }
+  ]);
   const [brokers, setBrokers] = useState<any[]>([]);
   const [paymentsList, setPaymentsList] = useState<PaymentRecord[]>([]);
   const [signalsList, setSignalsList] = useState<TradingSignal[]>([]);
@@ -1730,6 +1738,53 @@ export function App() {
     }
   };
 
+  // Auth Handler: Signup
+  const handleSignup = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsAuthLoading(true);
+    setAuthError('');
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/auth/signup`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: authName, email: authEmail, password: authPassword })
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Registration failed');
+      }
+
+      const data = await response.json();
+      if (data.success) {
+        dispatch(dashboardActions.setAuth({ token: data.token, user: data.user }));
+        addToast('success', 'Account Registered', `Welcome to BlackRox, ${data.user.name}! 7-Day Trial activated.`);
+      }
+    } catch (err: any) {
+      console.error(err);
+      // Local fallback simulation if server is offline
+      if (!isConnected) {
+        const mockUser: User = {
+          id: 'u' + Date.now(),
+          name: authName,
+          email: authEmail,
+          role: 'user',
+          lotMultiplier: 1.0,
+          planId: 'plan_trial'
+        };
+        const mockToken = 'blackrox_jwt_mock_token_' + authEmail;
+        dispatch(dashboardActions.setAuth({ token: mockToken, user: mockUser }));
+        addToast('success', 'Trial Account Created (Offline Mode)', 'Authenticated successfully via local mock.');
+      } else {
+        setAuthError(err.message || 'Registration failed');
+        addToast('error', 'Registration Failed', err.message || 'Could not complete registration');
+      }
+    } finally {
+      setIsAuthLoading(false);
+    }
+  };
+
   // Auth Handler: Logout
   const handleLogout = () => {
     localStorage.removeItem('isLoggedIn');
@@ -1946,17 +2001,35 @@ export function App() {
             {/* Login Center Form */}
             <div className="w-full max-w-[320px] mx-auto my-auto py-12 flex flex-col justify-center">
               <h2 className="text-2xl font-extrabold tracking-tight text-foreground mb-1">
-                Login to your account
+                {authMode === 'login' ? 'Login to your account' : 'Create a trial account'}
               </h2>
               <p className="text-sm text-muted-foreground mb-8">
-                Enter your email below to login to your account
+                {authMode === 'login' 
+                  ? 'Enter your email below to login to your account' 
+                  : 'Register now to activate your 7-day free trial'}
               </p>
 
-              <form onSubmit={handleLogin} className="space-y-4">
+              <form onSubmit={authMode === 'login' ? handleLogin : handleSignup} className="space-y-4">
                 {authError && (
                   <div className="bg-destructive/10 border border-destructive/20 text-destructive text-xs p-3 rounded-none flex items-center gap-2 font-semibold">
                     <XCircle className="w-4 h-4 shrink-0" />
                     {authError}
+                  </div>
+                )}
+
+                {authMode === 'signup' && (
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-bold text-foreground uppercase tracking-wider block">
+                      Name
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="Your name"
+                      value={authName}
+                      onChange={(e) => setAuthName(e.target.value)}
+                      className="w-full bg-background border border-border focus:border-primary focus:ring-1 focus:ring-primary rounded-none px-4 py-2 text-sm text-foreground outline-none transition-all placeholder:text-muted-foreground/50"
+                      required
+                    />
                   </div>
                 )}
 
@@ -1979,16 +2052,18 @@ export function App() {
                     <label className="text-xs font-bold text-foreground uppercase tracking-wider block">
                       Password
                     </label>
-                    <a
-                      href="#forgot"
-                      onClick={(e) => {
-                        e.preventDefault();
-                        addToast('info', 'Forgot Password', 'Password recovery is managed by your organization administrator.');
-                      }}
-                      className="text-xs text-foreground font-bold hover:underline"
-                    >
-                      Forgot your password?
-                    </a>
+                    {authMode === 'login' && (
+                      <a
+                        href="#forgot"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          addToast('info', 'Forgot Password', 'Password recovery is managed by your organization administrator.');
+                        }}
+                        className="text-xs text-foreground font-bold hover:underline"
+                      >
+                        Forgot your password?
+                      </a>
+                    )}
                   </div>
                   <input
                     type="password"
@@ -2000,23 +2075,36 @@ export function App() {
                   />
                 </div>
 
-                <div className="flex flex-col gap-2 pt-2">
-                  <label className="flex items-center gap-2.5 text-xs font-semibold text-foreground cursor-pointer select-none">
-                    <input
-                      type="checkbox"
-                      defaultChecked
-                      className="rounded-none border-border bg-background w-4 h-4 cursor-pointer accent-primary"
-                    />
-                    Remember me
-                  </label>
-                  <label className="flex items-center gap-2.5 text-xs font-semibold text-muted-foreground cursor-pointer select-none">
-                    <input
-                      type="checkbox"
-                      className="rounded-none border-border bg-background w-4 h-4 cursor-pointer accent-primary"
-                    />
-                    Enforce 2FA Authenticator Token
-                  </label>
-                </div>
+                {authMode === 'login' ? (
+                  <div className="flex flex-col gap-2 pt-2">
+                    <label className="flex items-center gap-2.5 text-xs font-semibold text-foreground cursor-pointer select-none">
+                      <input
+                        type="checkbox"
+                        defaultChecked
+                        className="rounded-none border-border bg-background w-4 h-4 cursor-pointer accent-primary"
+                      />
+                      Remember me
+                    </label>
+                    <label className="flex items-center gap-2.5 text-xs font-semibold text-muted-foreground cursor-pointer select-none">
+                      <input
+                        type="checkbox"
+                        className="rounded-none border-border bg-background w-4 h-4 cursor-pointer accent-primary"
+                      />
+                      Enforce 2FA Authenticator Token
+                    </label>
+                  </div>
+                ) : (
+                  <div className="flex flex-col gap-2 pt-2">
+                    <label className="flex items-center gap-2.5 text-xs font-semibold text-foreground cursor-pointer select-none">
+                      <input
+                        type="checkbox"
+                        required
+                        className="rounded-none border-border bg-background w-4 h-4 cursor-pointer accent-primary"
+                      />
+                      I agree to the 7-day sandbox terms
+                    </label>
+                  </div>
+                )}
 
                 <button
                   type="submit"
@@ -2026,26 +2114,27 @@ export function App() {
                   {isAuthLoading ? (
                     <div className="w-5 h-5 border-2 border-primary-foreground/30 border-t-primary-foreground rounded-full animate-spin" />
                   ) : (
-                    'Login'
+                    authMode === 'login' ? 'Login' : 'Sign Up (7-Day Trial)'
                   )}
                 </button>
               </form>
 
-              {/* Demo Credentials Helper */}
-              <div className="mt-8 pt-6 border-t border-border/40 text-center">
+              {/* Mode Switcher Link */}
+              <div className="mt-4 text-center">
                 <button
                   type="button"
                   onClick={() => {
-                    setAuthEmail('admin@back.com');
-                    setAuthPassword('Test@123');
-                    addToast('info', 'Autofilled Credentials', 'Demo login credentials have been pre-filled.');
+                    setAuthMode(authMode === 'login' ? 'signup' : 'login');
+                    setAuthError('');
                   }}
-                  className="text-xs uppercase font-bold tracking-wider text-primary bg-primary/10 hover:bg-primary/15 px-4 py-2 transition-all cursor-pointer inline-flex items-center gap-1.5 rounded-none"
+                  className="text-xs font-bold text-foreground hover:underline transition-all cursor-pointer"
                 >
-                  <KeyRound className="w-3.5 h-3.5" />
-                  Use Demo Account (Autofill)
+                  {authMode === 'login' 
+                    ? "Don't have an account? Sign up for a 7-day free trial" 
+                    : "Already have an account? Login here"}
                 </button>
               </div>
+
             </div>
 
             {/* Footer */}

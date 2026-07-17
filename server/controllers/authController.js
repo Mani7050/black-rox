@@ -45,6 +45,7 @@ exports.login = (req, res) => {
         email: user.email,
         role: user.role,
         lotMultiplier: user.lotMultiplier || 1.0,
+        planId: user.planId,
         riskSettings: user.riskSettings || defaultRiskSettings
       }
     });
@@ -52,3 +53,59 @@ exports.login = (req, res) => {
 
   return res.status(401).json({ error: 'Invalid email or password' });
 };
+
+exports.signup = (req, res) => {
+  const { name, email, password } = req.body;
+
+  if (!name || !email || !password) {
+    return res.status(400).json({ error: 'Name, email and password are required' });
+  }
+
+  const emailLower = email.toLowerCase();
+  const userExists = data.users.some(u => u.email.toLowerCase() === emailLower);
+  if (userExists) {
+    return res.status(400).json({ error: 'User with this email already exists' });
+  }
+
+  // Hash password
+  const hashedPassword = bcrypt.hashSync(password, 10);
+
+  const newUser = {
+    id: 'u' + Date.now(),
+    name,
+    email: emailLower,
+    password: hashedPassword,
+    role: 'user',
+    status: 'active',
+    planId: 'plan_trial', // Auto assign trial plan
+    createdAt: new Date().toISOString(),
+    lastLogin: new Date().toISOString(),
+    lotMultiplier: 1.0,
+    riskSettings: { ...defaultRiskSettings }
+  };
+
+  data.users.push(newUser);
+  saveDB();
+
+  // Sign a secure JWT token containing the user details
+  const token = jwt.sign(
+    { id: newUser.id, email: newUser.email, role: newUser.role, name: newUser.name },
+    JWT_SECRET,
+    { expiresIn: '7d' }
+  );
+
+  return res.status(201).json({
+    success: true,
+    token,
+    user: {
+      id: newUser.id,
+      name: newUser.name,
+      email: newUser.email,
+      role: newUser.role,
+      lotMultiplier: newUser.lotMultiplier,
+      planId: newUser.planId,
+      riskSettings: newUser.riskSettings
+    }
+  });
+};
+

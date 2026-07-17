@@ -165,6 +165,16 @@
   "openPositions": [],
   "subscriptionPlans": [
     {
+      "id": "plan_trial",
+      "name": "7-Day Trial",
+      "price": 0,
+      "durationDays": 7,
+      "maxLotLimit": 1,
+      "maxCapital": 10000,
+      "maxOpenPositions": 1,
+      "status": "active"
+    },
+    {
       "id": "plan_basic",
       "name": "Basic Plan",
       "price": 1999,

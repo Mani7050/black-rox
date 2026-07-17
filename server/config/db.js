@@ -44,6 +44,7 @@ const defaultData = {
   logs: [],
   openPositions: [],
   subscriptionPlans: [
+    { id: 'plan_trial', name: '7-Day Trial', price: 0, durationDays: 7, maxLotLimit: 1, maxCapital: 10000, maxOpenPositions: 1, status: 'active' },
     { id: 'plan_basic', name: 'Basic Plan', price: 1999, durationDays: 30, maxLotLimit: 2, maxCapital: 100000, maxOpenPositions: 2, status: 'active' },
     { id: 'plan_pro', name: 'Pro Scalper', price: 4999, durationDays: 30, maxLotLimit: 10, maxCapital: 500000, maxOpenPositions: 5, status: 'active' },
     { id: 'plan_vip', name: 'VIP Unlimited', price: 9999, durationDays: 90, maxLotLimit: 50, maxCapital: 2500000, maxOpenPositions: 15, status: 'active' }

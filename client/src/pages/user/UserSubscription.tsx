@@ -30,23 +30,31 @@ export default function UserSubscription({ user, plans, addToast }: UserSubscrip
             Current Active License
           </span>
           <div>
-            <h3 className="text-lg font-bold text-foreground">{activePlan?.name || 'Pro Scalper'}</h3>
+            <h3 className="text-lg font-bold text-foreground">
+              {activePlan?.name || (user?.planId === 'plan_trial' ? '7-Day Trial' : 'Pro Scalper')}
+            </h3>
             <p className="text-xs text-muted-foreground">
-              Renewal due in {activePlan?.durationDays || 18} Days ({activePlan?.durationDays || 30}-day template)
+              Renewal due in {activePlan?.durationDays || (user?.planId === 'plan_trial' ? 7 : 18)} Days ({activePlan?.durationDays || (user?.planId === 'plan_trial' ? 7 : 30)}-day template)
             </p>
           </div>
           <div className="border-t border-border/60 pt-3 text-xs space-y-2">
             <div className="flex justify-between">
               <span className="text-muted-foreground">Max Lot Size limit:</span>
-              <span className="font-bold font-mono">{activePlan?.maxLotLimit || 10} Lots</span>
+              <span className="font-bold font-mono">
+                {activePlan?.maxLotLimit || (user?.planId === 'plan_trial' ? 1 : 10)} Lots
+              </span>
             </div>
             <div className="flex justify-between">
               <span className="text-muted-foreground">Max Allocated Capital:</span>
-              <span className="font-bold font-mono">₹{(activePlan?.maxCapital || 5000000).toLocaleString()}</span>
+              <span className="font-bold font-mono">
+                ₹{(activePlan?.maxCapital || (user?.planId === 'plan_trial' ? 10000 : 5000000)).toLocaleString()}
+              </span>
             </div>
             <div className="flex justify-between">
               <span className="text-muted-foreground">Max Open Positions:</span>
-              <span className="font-bold">{activePlan?.maxOpenPositions || 5} Open Trades</span>
+              <span className="font-bold">
+                {activePlan?.maxOpenPositions || (user?.planId === 'plan_trial' ? 1 : 5)} Open Trades
+              </span>
             </div>
           </div>
         </div>
