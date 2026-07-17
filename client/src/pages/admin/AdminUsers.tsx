@@ -1,4 +1,11 @@
-import { MoreVertical, Plus, XCircle } from 'lucide-react';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+  DropdownMenuSeparator,
+} from "@/components/ui/dropdown-menu"
+import { MoreVertical, Plus, XCircle, Eye, Pencil, Info, Sliders, Briefcase, RefreshCw, Ban, Trash2 } from 'lucide-react';
 
 interface User {
   id: string;
@@ -21,11 +28,21 @@ interface AdminUsersProps {
   openActionMenuId: string | null;
   setOpenActionMenuId: (id: string | null) => void;
   setShowAddUserModal: (show: boolean) => void;
+  setSelectedUserForView: (user: User) => void;
+  setShowViewUserModal: (show: boolean) => void;
+  setSelectedUserForEdit: (user: User) => void;
+  setEditUserName: (name: string) => void;
+  setEditUserEmail: (email: string) => void;
+  setEditUserRole: (role: 'admin' | 'user') => void;
+  setEditUserMultiplier: (multiplier: string) => void;
+  setShowEditUserModal: (show: boolean) => void;
   setSelectedUserForPlan: (user: User) => void;
   setAssignedPlanId: (id: string) => void;
   setShowAssignPlanModal: (show: boolean) => void;
   handleResetUserApi: (id: string) => void;
   handleToggleUserStatus: (id: string) => void;
+  setSelectedUserForDelete: (user: User) => void;
+  setShowDeleteUserModal: (show: boolean) => void;
   currentUserId: string | undefined;
   plans: Plan[];
 }
@@ -35,11 +52,21 @@ export default function AdminUsers({
   openActionMenuId,
   setOpenActionMenuId,
   setShowAddUserModal,
+  setSelectedUserForView,
+  setShowViewUserModal,
+  setSelectedUserForEdit,
+  setEditUserName,
+  setEditUserEmail,
+  setEditUserRole,
+  setEditUserMultiplier,
+  setShowEditUserModal,
   setSelectedUserForPlan,
   setAssignedPlanId,
   setShowAssignPlanModal,
   handleResetUserApi,
   handleToggleUserStatus,
+  setSelectedUserForDelete,
+  setShowDeleteUserModal,
   currentUserId,
   plans,
 }: AdminUsersProps) {
@@ -69,7 +96,7 @@ export default function AdminUsers({
         </button>
       </div>
 
-      <div className="w-full overflow-x-auto">
+      <div className="w-full overflow-x-auto md:overflow-visible">
         <table className="w-full text-left border-collapse">
           <thead>
             <tr className="bg-muted/40 border-b border-border text-xs font-bold text-muted-foreground">
@@ -90,7 +117,6 @@ export default function AdminUsers({
               for (let i = 0; i < u.name.length; i++) hash = u.name.charCodeAt(i) + ((hash << 5) - hash);
               const colorClass = avatarColors[Math.abs(hash) % avatarColors.length];
               const isMenuOpen = openActionMenuId === u.id;
-
               return (
                 <tr key={u.id} className="hover:bg-muted/10 transition-colors">
                   <td className="p-4 py-3.5 flex items-center gap-3 font-semibold text-foreground">
@@ -149,48 +175,81 @@ export default function AdminUsers({
                     </div>
                   </td>
                   <td className="p-4 py-3.5 text-right">
-                    <div className="relative inline-block">
-                      <button
-                        onClick={() => setOpenActionMenuId(isMenuOpen ? null : u.id)}
-                        className="p-1.5 rounded-none hover:bg-muted text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
-                      >
-                        <MoreVertical className="w-4 h-4" />
-                      </button>
-                      {isMenuOpen && (
-                        <>
-                          <div className="fixed inset-0 z-10" onClick={() => setOpenActionMenuId(null)} />
-                          <div className="absolute right-0 top-8 z-20 bg-card border border-border shadow-xl min-w-[160px] py-1 animate-zoom-in">
-                            <button
-                              onClick={() => {
-                                setSelectedUserForPlan(u);
-                                setAssignedPlanId(plans[0]?.id || '');
-                                setShowAssignPlanModal(true);
-                                setOpenActionMenuId(null);
-                              }}
-                              className="w-full text-left px-4 py-2 text-xs font-semibold text-foreground hover:bg-muted transition-colors cursor-pointer"
-                            >
-                              Assign Plan
-                            </button>
-                            <button
-                              onClick={() => { handleResetUserApi(u.id); setOpenActionMenuId(null); }}
-                              className="w-full text-left px-4 py-2 text-xs font-semibold text-amber-500 hover:bg-muted transition-colors cursor-pointer"
-                            >
-                              Reset API
-                            </button>
-                            <div className="border-t border-border my-1" />
-                            <button
-                              onClick={() => { handleToggleUserStatus(u.id); setOpenActionMenuId(null); }}
-                              disabled={u.id === currentUserId}
-                              className={`w-full text-left px-4 py-2 text-xs font-semibold transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed ${
-                                u.status !== 'suspended' ? 'text-rose-500 hover:bg-rose-500/10' : 'text-emerald-500 hover:bg-emerald-500/10'
-                              }`}
-                            >
-                              {u.status !== 'suspended' ? 'Suspend User' : 'Activate User'}
-                            </button>
-                          </div>
-                        </>
-                      )}
-                    </div>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <button
+                          className="p-1.5 rounded-none hover:bg-muted text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
+                        >
+                          <MoreVertical className="w-4 h-4" />
+                        </button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end" className="w-[160px] rounded-none bg-card border border-border shadow-xl p-0 py-1.5">
+                        <DropdownMenuItem
+                          onClick={() => {
+                            setSelectedUserForView(u);
+                            setShowViewUserModal(true);
+                          }}
+                          className="w-full text-left px-3.5 py-1.5 text-xs font-semibold text-foreground hover:bg-muted transition-colors cursor-pointer flex items-center gap-2 rounded-none focus:bg-muted focus:text-foreground"
+                        >
+                          <Eye className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
+                          <span>View Details</span>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                          onClick={() => {
+                            setSelectedUserForEdit(u);
+                            setEditUserName(u.name);
+                            setEditUserEmail(u.email);
+                            setEditUserRole(u.role as 'admin' | 'user');
+                            setEditUserMultiplier(u.lotMultiplier?.toString() || '1.0');
+                            setShowEditUserModal(true);
+                          }}
+                          className="w-full text-left px-3.5 py-1.5 text-xs font-semibold text-foreground hover:bg-muted transition-colors cursor-pointer flex items-center gap-2 rounded-none focus:bg-muted focus:text-foreground"
+                        >
+                          <Pencil className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
+                          <span>Edit Details</span>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                          onClick={() => {
+                            setSelectedUserForPlan(u);
+                            setAssignedPlanId(plans[0]?.id || '');
+                            setShowAssignPlanModal(true);
+                          }}
+                          className="w-full text-left px-3.5 py-1.5 text-xs font-semibold text-foreground hover:bg-muted transition-colors cursor-pointer flex items-center gap-2 rounded-none focus:bg-muted focus:text-foreground"
+                        >
+                          <Briefcase className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
+                          <span>Assign Plan</span>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                          onClick={() => handleResetUserApi(u.id)}
+                          className="w-full text-left px-3.5 py-1.5 text-xs font-semibold text-foreground hover:bg-muted transition-colors cursor-pointer flex items-center gap-2 rounded-none focus:bg-muted focus:text-foreground"
+                        >
+                          <RefreshCw className="w-3.5 h-3.5 text-amber-500 shrink-0" />
+                          <span>Reset API</span>
+                        </DropdownMenuItem>
+                        <DropdownMenuSeparator className="bg-border/60 my-1 -mx-0" />
+                        <DropdownMenuItem
+                          onClick={() => handleToggleUserStatus(u.id)}
+                          disabled={u.id === currentUserId}
+                          className={`w-full text-left px-3.5 py-1.5 text-xs font-semibold transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-2 rounded-none focus:bg-muted focus:text-foreground ${
+                            u.status !== 'suspended' ? 'text-rose-500 focus:text-rose-500 focus:bg-rose-500/10' : 'text-emerald-500 focus:text-emerald-500 focus:bg-emerald-500/10'
+                          }`}
+                        >
+                          <Ban className="w-3.5 h-3.5 shrink-0" />
+                          <span>{u.status !== 'suspended' ? 'Suspend User' : 'Activate User'}</span>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                          onClick={() => {
+                            setSelectedUserForDelete(u);
+                            setShowDeleteUserModal(true);
+                          }}
+                          disabled={u.id === currentUserId}
+                          className="w-full text-left px-3.5 py-1.5 text-xs font-semibold text-red-500 hover:bg-red-500/10 transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-2 rounded-none focus:bg-red-500/10 focus:text-red-500"
+                        >
+                          <Trash2 className="w-3.5 h-3.5 shrink-0" />
+                          <span>Delete User</span>
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
                   </td>
                 </tr>
               );

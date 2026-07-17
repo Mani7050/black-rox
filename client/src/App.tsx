@@ -1,8 +1,17 @@
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+  DropdownMenuSeparator,
+} from "@/components/ui/dropdown-menu"
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAppSelector, useAppDispatch } from './store';
 import * as dashboardActions from './store/dashboardSlice';
 import {
+  Eye,
+  Pencil,
   LayoutDashboard,
   KeyRound,
   Play,
@@ -42,7 +51,8 @@ import {
   Database,
   MoreVertical,
   LayoutGrid,
-  List
+  List,
+  Menu
 } from 'lucide-react';
 
 // Interfaces for our state
@@ -340,8 +350,8 @@ function DonutChart({ data }: DonutChartProps) {
   let accumulatedPercent = 0;
 
   return (
-    <div className="flex items-center justify-between gap-6">
-      <div className="relative w-36 h-36 shrink-0">
+    <div className="flex flex-col sm:flex-row items-center justify-between gap-6">
+      <div className="relative w-36 h-36 shrink-0 mx-auto sm:mx-0">
         <svg viewBox={`0 0 ${size} ${size}`} className="w-full h-full -rotate-90">
           <circle cx={center} cy={center} r={radius} fill="transparent" stroke="var(--border)" strokeWidth={strokeWidth} className="opacity-25" />
           {data.map((d, index) => {
@@ -718,6 +728,7 @@ export function App() {
 
   // Auto-trading toggle
   const [isAutoTradingOn, setIsAutoTradingOn] = useState(true);
+  const [showMobileSidebar, setShowMobileSidebar] = useState(false);
 
   useEffect(() => {
     if (user?.riskSettings) {
@@ -2194,11 +2205,161 @@ export function App() {
           </div>
         </aside>
 
+        {/* Mobile Sidebar Drawer overlay */}
+        {showMobileSidebar && (
+          <div className="fixed inset-0 z-50 flex md:hidden">
+            {/* Backdrop */}
+            <div 
+              className="absolute inset-0 bg-black/40 backdrop-blur-xs transition-opacity duration-300"
+              onClick={() => setShowMobileSidebar(false)}
+            />
+            {/* Drawer Content container */}
+            <aside className="relative w-72 bg-background border-r border-border h-full flex flex-col animate-slide-in-right shadow-2xl z-10 transition-colors duration-300">
+              {/* Close button inside sidebar header */}
+              <div className="h-[73px] border-b border-border px-6 flex items-center justify-between bg-background shrink-0">
+                <div className="flex items-center gap-3">
+                  <div className="bg-primary p-2 flex items-center justify-center shrink-0">
+                    <Cpu className="w-5 h-5 text-primary-foreground animate-pulse" />
+                  </div>
+                  <div>
+                    <h1 className="text-base font-bold tracking-tight text-foreground leading-none">
+                      BlackRox <span className="text-primary font-semibold text-[9px] align-super ml-0.5">ALGO</span>
+                    </h1>
+                    <p className="text-[9px] text-muted-foreground mt-0.5">High-Frequency Algo Terminal</p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setShowMobileSidebar(false)}
+                  className="p-1 rounded-none hover:bg-muted text-muted-foreground hover:text-foreground cursor-pointer"
+                >
+                  <XCircle className="w-5 h-5" />
+                </button>
+              </div>
+              
+              {/* Tab Items List */}
+              <div className="flex-1 py-4 px-3 flex flex-col gap-0.5 overflow-y-auto scrollbar-none">
+                {user?.role === 'admin' ? (
+                  [
+                    { id: 'admin_dashboard', label: 'Dashboard', icon: LayoutDashboard },
+                    { id: 'admin_users', label: 'User Management', icon: Users },
+                    { id: 'admin_subscriptions', label: 'Subscription Plans', icon: Briefcase },
+                    { id: 'admin_brokers', label: 'Broker Management', icon: KeyRound },
+                    { id: 'admin_trading', label: 'Trading Management', icon: Cpu },
+                    { id: 'admin_risk', label: 'Risk Management', icon: Sliders },
+                    { id: 'admin_signals', label: 'Signal Management', icon: Activity },
+                    { id: 'admin_payments', label: 'Payment Control', icon: CreditCard },
+                    { id: 'admin_reports', label: 'Reports & Sheets', icon: FileSpreadsheet },
+                    { id: 'admin_notifications', label: 'Notifications Center', icon: Bell },
+                    { id: 'admin_settings', label: 'System Settings', icon: Settings },
+                    { id: 'admin_audit', label: 'Audit Logs', icon: Terminal }
+                  ].map(item => {
+                    const Icon = item.icon;
+                    return (
+                      <button
+                        key={item.id}
+                        onClick={() => {
+                          setActiveTab(item.id);
+                          setShowMobileSidebar(false);
+                        }}
+                        className={`flex items-center gap-3 w-full px-3 py-3 rounded-none text-xs font-semibold transition-all duration-200 cursor-pointer ${
+                          activeTab === item.id
+                            ? 'bg-primary text-primary-foreground font-bold'
+                            : 'text-muted-foreground hover:bg-muted/40 hover:text-foreground'
+                        }`}
+                      >
+                        <Icon className="w-4 h-4 shrink-0" />
+                        {item.label}
+                      </button>
+                    );
+                  })
+                ) : (
+                  [
+                    { id: 'user_dashboard', label: 'Dashboard Terminal', icon: LayoutDashboard },
+                    { id: 'user_broker', label: 'Broker Connection', icon: KeyRound },
+                    { id: 'user_subscription', label: 'Subscription Plan', icon: Briefcase },
+                    { id: 'user_trading_settings', label: 'Trading Settings', icon: Sliders },
+                    { id: 'user_orders_reports', label: 'Orders & Reports', icon: FileText },
+                    { id: 'user_profile', label: 'Profile & Security', icon: UserIcon }
+                  ].map(item => {
+                    const Icon = item.icon;
+                    return (
+                      <button
+                        key={item.id}
+                        onClick={() => {
+                          setActiveTab(item.id);
+                          setShowMobileSidebar(false);
+                        }}
+                        className={`flex items-center gap-3 w-full px-3 py-3.5 rounded-none text-xs font-semibold transition-all duration-200 cursor-pointer ${
+                          activeTab === item.id
+                            ? 'bg-primary text-primary-foreground font-bold'
+                            : 'text-muted-foreground hover:bg-muted/40 hover:text-foreground'
+                        }`}
+                      >
+                        <Icon className="w-4 h-4 shrink-0" />
+                        {item.label}
+                      </button>
+                    );
+                  })
+                )}
+              </div>
+
+              {/* Bottom Actions inside Mobile Drawer */}
+              <div className="p-6 border-t border-border flex flex-col gap-4 shrink-0">
+                {user && (
+                  <div className="flex items-center gap-3 bg-muted/40 border border-border p-3 rounded-none">
+                    <div className="w-8 h-8 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center text-xs font-bold text-primary capitalize shrink-0">
+                      {user.name.charAt(0)}
+                    </div>
+                    <div className="overflow-hidden">
+                      <p className="text-xs font-bold text-foreground truncate">{user.name}</p>
+                      <p className="text-[10px] text-muted-foreground capitalize font-semibold">{user.role} account</p>
+                    </div>
+                  </div>
+                )}
+
+                <div className="bg-card border border-border p-4 rounded-none">
+                  <div className="flex items-center justify-between text-xs text-muted-foreground">
+                    <span>Active Bots Capital</span>
+                    <Sliders className="w-3.5 h-3.5" />
+                  </div>
+                  <p className="text-xl font-bold mt-1 text-foreground">
+                    ₹{strategies.filter(s => s.status === 'active').reduce((acc, s) => acc + s.capital, 0).toLocaleString()}
+                  </p>
+                </div>
+                
+                <button
+                  onClick={() => {
+                    handleLogout();
+                    setShowMobileSidebar(false);
+                  }}
+                  className="w-full flex items-center justify-center gap-2 py-2.5 rounded-none border border-destructive/20 bg-destructive/5 hover:bg-destructive/10 text-destructive text-xs font-bold transition-colors cursor-pointer"
+                >
+                  <LogOut className="w-3.5 h-3.5 shrink-0" />
+                  Sign Out Session
+                </button>
+
+                <div className="text-center">
+                  <p className="text-[10px] text-muted-foreground/60">v0.0.1 • Connected to local server</p>
+                </div>
+              </div>
+            </aside>
+          </div>
+        )}
+
         {/* Main Content Area Wrapper */}
         <div className="flex-1 flex flex-col h-screen overflow-hidden">
           {/* Top Header bar inside Right Content Area */}
           <header className="h-[73px] border-b border-border bg-background/60 backdrop-blur-md sticky top-0 z-40 px-6 flex items-center justify-between transition-colors duration-300">
-            <div className="flex items-center gap-2 text-foreground font-bold select-none">
+            <div className="flex items-center gap-2 text-foreground font-bold select-none overflow-hidden max-w-[200px] sm:max-w-none">
+              {/* Menu hamburger toggle for mobile screen */}
+              <button
+                onClick={() => setShowMobileSidebar(true)}
+                className="md:hidden p-1.5 rounded-none border border-border bg-card hover:bg-muted text-muted-foreground hover:text-foreground transition-all cursor-pointer shrink-0 mr-1"
+                title="Toggle navigation menu"
+              >
+                <Menu className="w-4 h-4" />
+              </button>
+
               {(() => {
                 const activeId = activeTab;
                 if (activeId.startsWith('admin_')) {
@@ -2221,7 +2382,7 @@ export function App() {
                   return (
                     <>
                       <Icon className="w-4 h-4 text-primary shrink-0" />
-                      <span className="text-sm font-semibold tracking-tight">{item ? item.label : 'Admin Console'}</span>
+                      <span className="text-sm font-semibold tracking-tight truncate max-w-[120px] sm:max-w-none">{item ? item.label : 'Admin Console'}</span>
                     </>
                   );
                 } else {
@@ -2238,7 +2399,7 @@ export function App() {
                   return (
                     <>
                       <Icon className="w-4 h-4 text-primary shrink-0" />
-                      <span className="text-sm font-semibold tracking-tight">{item ? item.label : 'Trading Terminal'}</span>
+                      <span className="text-sm font-semibold tracking-tight truncate max-w-[120px] sm:max-w-none">{item ? item.label : 'Trading Terminal'}</span>
                     </>
                   );
                 }
@@ -2282,53 +2443,104 @@ export function App() {
           </header>
 
           {/* Mobile Navigation bar */}
-          <div className="md:hidden fixed bottom-0 left-0 right-0 bg-background border-t border-border z-50 flex justify-around py-3">
-          <button onClick={() => setActiveTab('dashboard')} className={`flex flex-col items-center gap-1 text-[10px] font-semibold ${activeTab === 'dashboard' ? 'text-primary' : 'text-muted-foreground'}`}>
-            <LayoutDashboard className="w-5 h-5" />
-            Overview
-          </button>
-          <button onClick={() => setActiveTab('apis')} className={`flex flex-col items-center gap-1 text-[10px] font-semibold ${activeTab === 'apis' ? 'text-primary' : 'text-muted-foreground'}`}>
-            <KeyRound className="w-5 h-5" />
-            APIs
-          </button>
-          <button onClick={() => setActiveTab('strategies')} className={`flex flex-col items-center gap-1 text-[10px] font-semibold ${activeTab === 'strategies' ? 'text-primary' : 'text-muted-foreground'}`}>
-            <Cpu className="w-5 h-5" />
-            Strategies
-          </button>
-          {user?.role === 'admin' && (
-            <button onClick={() => setActiveTab('users')} className={`flex flex-col items-center gap-1 text-[10px] font-semibold ${activeTab === 'users' ? 'text-primary' : 'text-muted-foreground'}`}>
-              <Users className="w-5 h-5" />
-              Users
-            </button>
-          )}
-          <button onClick={() => setActiveTab('logs')} className={`flex flex-col items-center gap-1 text-[10px] font-semibold ${activeTab === 'logs' ? 'text-primary' : 'text-muted-foreground'}`}>
-            <Terminal className="w-5 h-5" />
-            Logs
-          </button>
-          <button onClick={handleLogout} className="flex flex-col items-center gap-1 text-[10px] font-semibold text-destructive">
-            <LogOut className="w-5 h-5" />
-            Logout
-          </button>
-        </div>
+          <div className="md:hidden fixed bottom-0 left-0 right-0 bg-background border-t border-border z-50 flex justify-around py-2.5 px-2">
+            {user?.role === 'admin' ? (
+              <>
+                <button 
+                  onClick={() => setActiveTab('admin_dashboard')} 
+                  className={`flex flex-col items-center gap-1 text-[10px] font-semibold cursor-pointer ${activeTab === 'admin_dashboard' ? 'text-primary' : 'text-muted-foreground'}`}
+                >
+                  <LayoutDashboard className="w-4 h-4" />
+                  Overview
+                </button>
+                <button 
+                  onClick={() => setActiveTab('admin_users')} 
+                  className={`flex flex-col items-center gap-1 text-[10px] font-semibold cursor-pointer ${activeTab === 'admin_users' ? 'text-primary' : 'text-muted-foreground'}`}
+                >
+                  <Users className="w-4 h-4" />
+                  Users
+                </button>
+                <button 
+                  onClick={() => setActiveTab('admin_brokers')} 
+                  className={`flex flex-col items-center gap-1 text-[10px] font-semibold cursor-pointer ${activeTab === 'admin_brokers' ? 'text-primary' : 'text-muted-foreground'}`}
+                >
+                  <KeyRound className="w-4 h-4" />
+                  Brokers
+                </button>
+                <button 
+                  onClick={() => setActiveTab('admin_signals')} 
+                  className={`flex flex-col items-center gap-1 text-[10px] font-semibold cursor-pointer ${activeTab === 'admin_signals' ? 'text-primary' : 'text-muted-foreground'}`}
+                >
+                  <Activity className="w-4 h-4" />
+                  Signals
+                </button>
+                <button 
+                  onClick={() => setActiveTab('admin_audit')} 
+                  className={`flex flex-col items-center gap-1 text-[10px] font-semibold cursor-pointer ${activeTab === 'admin_audit' ? 'text-primary' : 'text-muted-foreground'}`}
+                >
+                  <Terminal className="w-4 h-4" />
+                  Logs
+                </button>
+              </>
+            ) : (
+              <>
+                <button 
+                  onClick={() => setActiveTab('user_dashboard')} 
+                  className={`flex flex-col items-center gap-1 text-[10px] font-semibold cursor-pointer ${activeTab === 'user_dashboard' ? 'text-primary' : 'text-muted-foreground'}`}
+                >
+                  <LayoutDashboard className="w-4 h-4" />
+                  Overview
+                </button>
+                <button 
+                  onClick={() => setActiveTab('user_broker')} 
+                  className={`flex flex-col items-center gap-1 text-[10px] font-semibold cursor-pointer ${activeTab === 'user_broker' ? 'text-primary' : 'text-muted-foreground'}`}
+                >
+                  <KeyRound className="w-4 h-4" />
+                  Demat
+                </button>
+                <button 
+                  onClick={() => setActiveTab('user_trading_settings')} 
+                  className={`flex flex-col items-center gap-1 text-[10px] font-semibold cursor-pointer ${activeTab === 'user_trading_settings' ? 'text-primary' : 'text-muted-foreground'}`}
+                >
+                  <Sliders className="w-4 h-4" />
+                  Limits
+                </button>
+                <button 
+                  onClick={() => setActiveTab('user_orders_reports')} 
+                  className={`flex flex-col items-center gap-1 text-[10px] font-semibold cursor-pointer ${activeTab === 'user_orders_reports' ? 'text-primary' : 'text-muted-foreground'}`}
+                >
+                  <FileText className="w-4 h-4" />
+                  Orders
+                </button>
+                <button 
+                  onClick={() => setActiveTab('user_profile')} 
+                  className={`flex flex-col items-center gap-1 text-[10px] font-semibold cursor-pointer ${activeTab === 'user_profile' ? 'text-primary' : 'text-muted-foreground'}`}
+                >
+                  <UserIcon className="w-4 h-4" />
+                  Profile
+                </button>
+              </>
+            )}
+          </div>
 
         {/* Dashboard Content area */}
-        <main className="flex-1 overflow-y-auto pb-24 md:pb-8 p-6 bg-muted/20">
+        <main className="flex-1 overflow-y-auto pb-24 md:pb-8 p-4 sm:p-6 bg-muted/20">
           
           {/* ================= ADMIN TABS ================= */}
           
           {/* ADMIN TAB 1: DASHBOARD OVERVIEW */}
           {activeTab === 'admin_dashboard' && (
             <div className="flex flex-col gap-6">
-              <div className="flex justify-between items-center border-b border-border pb-4">
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-border pb-4">
                 <div>
                   <h2 className="text-lg font-bold text-foreground">System Operations Dashboard</h2>
                   <p className="text-xs text-muted-foreground">Global overview of users, brokers, and active risk metrics</p>
                 </div>
                 <button
                   onClick={handleEmergencySquareOff}
-                  className="flex items-center gap-2 bg-rose-600 hover:bg-rose-700 text-white px-4 py-2.5 text-xs font-bold rounded-none shadow-lg transition-transform hover:scale-102 cursor-pointer"
+                  className="w-full sm:w-auto flex items-center justify-center gap-2 bg-rose-600 hover:bg-rose-700 text-white px-4 py-2.5 text-xs font-bold rounded-none shadow-lg transition-transform hover:scale-102 cursor-pointer shrink-0"
                 >
-                  <AlertOctagon className="w-4 h-4" />
+                  <AlertOctagon className="w-4 h-4 shrink-0" />
                   EMERGENCY SQUARE-OFF (ALL POSITIONS)
                 </button>
               </div>
@@ -2474,22 +2686,22 @@ export function App() {
           {/* ADMIN TAB 2: USER MANAGEMENT */}
           {activeTab === 'admin_users' && (
             <div className="flex flex-col gap-6">
-              <div className="flex justify-between items-center border-b border-border pb-4">
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-border pb-4">
                 <div>
                   <h2 className="text-lg font-bold text-foreground">User Management</h2>
                   <p className="text-xs text-muted-foreground">Manage user accounts, block access, configure custom sizing multipliers</p>
                 </div>
                 <button
                   onClick={() => setShowAddUserModal(true)}
-                  className="bg-primary hover:bg-primary/90 text-primary-foreground text-xs font-bold px-4 py-2.5 rounded-none flex items-center gap-2 shadow"
+                  className="w-full sm:w-auto flex items-center justify-center gap-2 bg-primary hover:bg-primary/90 text-primary-foreground text-xs font-bold px-4 py-2.5 rounded-none shadow cursor-pointer shrink-0"
                 >
-                  <Plus className="w-4 h-4" />
+                  <Plus className="w-4 h-4 shrink-0" />
                   Create User Account
                 </button>
               </div>
 
               {/* Users Table - Borderless Flat Layout */}
-              <div className="w-full overflow-x-auto">
+              <div className="w-full overflow-x-auto md:overflow-visible">
                 <table className="w-full text-left border-collapse">
                   <thead>
                     <tr className="bg-muted/40 border-b border-border text-xs font-bold text-muted-foreground">
@@ -2523,12 +2735,14 @@ export function App() {
                       const isMenuOpen = openActionMenuId === u.id;
 
                       return (
-                        <tr key={u.id} className="hover:bg-muted/10 transition-colors">
-                          <td className="p-4 py-3.5 flex items-center gap-3 font-semibold text-foreground">
-                            <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold shrink-0 ${colorClass}`}>
-                              {initials}
+                        <tr key={u.id} className="hover:bg-muted/10 transition-colors whitespace-nowrap">
+                          <td className="p-4 py-3.5">
+                            <div className="flex items-center gap-3 font-semibold text-foreground">
+                              <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold shrink-0 ${colorClass}`}>
+                                {initials}
+                              </div>
+                              <span>{u.name}</span>
                             </div>
-                            <span>{u.name}</span>
                           </td>
                           <td className="p-4 py-3.5 font-mono text-muted-foreground">{u.email}</td>
                           <td className="p-4 py-3.5 capitalize">
@@ -2580,85 +2794,81 @@ export function App() {
                             </div>
                           </td>
                           <td className="p-4 py-3.5 text-right">
-                            <div className="relative inline-block">
-                              <button
-                                onClick={() => setOpenActionMenuId(isMenuOpen ? null : u.id)}
-                                className="p-1.5 rounded-none hover:bg-muted text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
-                              >
-                                <MoreVertical className="w-4 h-4" />
-                              </button>
-                              {isMenuOpen && (
-                                <>
-                                  <div className="fixed inset-0 z-10" onClick={() => setOpenActionMenuId(null)} />
-                                  <div className="absolute right-0 top-8 z-20 bg-card border border-border shadow-xl min-w-[170px] py-1 animate-zoom-in">
-                                    <button
-                                      onClick={() => {
-                                        setSelectedUserForView(u);
-                                        setShowViewUserModal(true);
-                                        setOpenActionMenuId(null);
-                                      }}
-                                      className="w-full text-left px-4 py-2 text-xs font-semibold text-foreground hover:bg-muted transition-colors cursor-pointer"
-                                    >
-                                      View Details
-                                    </button>
-                                    <button
-                                      onClick={() => {
-                                        setSelectedUserForEdit(u);
-                                        setEditUserName(u.name);
-                                        setEditUserEmail(u.email);
-                                        setEditUserRole(u.role);
-                                        setEditUserMultiplier(u.lotMultiplier?.toString() || '1.0');
-                                        setShowEditUserModal(true);
-                                        setOpenActionMenuId(null);
-                                      }}
-                                      className="w-full text-left px-4 py-2 text-xs font-semibold text-foreground hover:bg-muted transition-colors cursor-pointer"
-                                    >
-                                      Edit Details
-                                    </button>
-                                    <button
-                                      onClick={() => {
-                                        setSelectedUserForPlan(u);
-                                        setAssignedPlanId(plans[0]?.id || '');
-                                        setShowAssignPlanModal(true);
-                                        setOpenActionMenuId(null);
-                                      }}
-                                      className="w-full text-left px-4 py-2 text-xs font-semibold text-foreground hover:bg-muted transition-colors cursor-pointer"
-                                    >
-                                      Assign Plan
-                                    </button>
-                                    <button
-                                      onClick={() => { handleResetUserApi(u.id); setOpenActionMenuId(null); }}
-                                      className="w-full text-left px-4 py-2 text-xs font-semibold text-amber-500 hover:bg-muted transition-colors cursor-pointer"
-                                    >
-                                      Reset API
-                                    </button>
-                                    <div className="border-t border-border my-1" />
-                                    <button
-                                      onClick={() => { handleToggleUserStatus(u.id); setOpenActionMenuId(null); }}
-                                      disabled={u.id === user?.id}
-                                      className={`w-full text-left px-4 py-2 text-xs font-semibold transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed ${
-                                        u.status !== 'suspended'
-                                          ? 'text-rose-500 hover:bg-rose-500/10'
-                                          : 'text-emerald-500 hover:bg-emerald-500/10'
-                                      }`}
-                                    >
-                                      {u.status !== 'suspended' ? 'Suspend User' : 'Activate User'}
-                                    </button>
-                                    <button
-                                      onClick={() => {
-                                        setSelectedUserForDelete(u);
-                                        setShowDeleteUserModal(true);
-                                        setOpenActionMenuId(null);
-                                      }}
-                                      disabled={u.id === user?.id}
-                                      className="w-full text-left px-4 py-2 text-xs font-semibold text-red-500 hover:bg-red-500/10 transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
-                                    >
-                                      Delete User
-                                    </button>
-                                  </div>
-                                </>
-                              )}
-                            </div>
+                            <DropdownMenu>
+                              <DropdownMenuTrigger asChild>
+                                <button
+                                  className="p-1.5 rounded-none hover:bg-muted text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
+                                >
+                                  <MoreVertical className="w-4 h-4" />
+                                </button>
+                              </DropdownMenuTrigger>
+                              <DropdownMenuContent align="end" className="w-[160px] rounded-none bg-card border border-border shadow-xl p-0 py-1.5">
+                                <DropdownMenuItem
+                                  onClick={() => {
+                                    setSelectedUserForView(u);
+                                    setShowViewUserModal(true);
+                                  }}
+                                  className="w-full text-left px-3.5 py-1.5 text-xs font-semibold text-foreground hover:bg-muted transition-colors cursor-pointer flex items-center gap-2 rounded-none focus:bg-muted focus:text-foreground"
+                                >
+                                  <Eye className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
+                                  <span>View Details</span>
+                                </DropdownMenuItem>
+                                <DropdownMenuItem
+                                  onClick={() => {
+                                    setSelectedUserForEdit(u);
+                                    setEditUserName(u.name);
+                                    setEditUserEmail(u.email);
+                                    setEditUserRole(u.role);
+                                    setEditUserMultiplier(u.lotMultiplier?.toString() || '1.0');
+                                    setShowEditUserModal(true);
+                                  }}
+                                  className="w-full text-left px-3.5 py-1.5 text-xs font-semibold text-foreground hover:bg-muted transition-colors cursor-pointer flex items-center gap-2 rounded-none focus:bg-muted focus:text-foreground"
+                                >
+                                  <Pencil className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
+                                  <span>Edit Details</span>
+                                </DropdownMenuItem>
+                                <DropdownMenuItem
+                                  onClick={() => {
+                                    setSelectedUserForPlan(u);
+                                    setAssignedPlanId(plans[0]?.id || '');
+                                    setShowAssignPlanModal(true);
+                                  }}
+                                  className="w-full text-left px-3.5 py-1.5 text-xs font-semibold text-foreground hover:bg-muted transition-colors cursor-pointer flex items-center gap-2 rounded-none focus:bg-muted focus:text-foreground"
+                                >
+                                  <Briefcase className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
+                                  <span>Assign Plan</span>
+                                </DropdownMenuItem>
+                                <DropdownMenuItem
+                                  onClick={() => handleResetUserApi(u.id)}
+                                  className="w-full text-left px-3.5 py-1.5 text-xs font-semibold text-foreground hover:bg-muted transition-colors cursor-pointer flex items-center gap-2 rounded-none focus:bg-muted focus:text-foreground"
+                                >
+                                  <RefreshCw className="w-3.5 h-3.5 text-amber-500 shrink-0" />
+                                  <span>Reset API</span>
+                                </DropdownMenuItem>
+                                <DropdownMenuSeparator className="bg-border/60 my-1 -mx-0" />
+                                <DropdownMenuItem
+                                  onClick={() => handleToggleUserStatus(u.id)}
+                                  disabled={u.id === user?.id}
+                                  className={`w-full text-left px-3.5 py-1.5 text-xs font-semibold transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-2 rounded-none focus:bg-muted focus:text-foreground ${
+                                    u.status !== 'suspended' ? 'text-rose-500 focus:text-rose-500 focus:bg-rose-500/10' : 'text-emerald-500 focus:text-emerald-500 focus:bg-emerald-500/10'
+                                  }`}
+                                >
+                                  <Ban className="w-3.5 h-3.5 shrink-0" />
+                                  <span>{u.status !== 'suspended' ? 'Suspend User' : 'Activate User'}</span>
+                                </DropdownMenuItem>
+                                <DropdownMenuItem
+                                  onClick={() => {
+                                    setSelectedUserForDelete(u);
+                                    setShowDeleteUserModal(true);
+                                  }}
+                                  disabled={u.id === user?.id}
+                                  className="w-full text-left px-3.5 py-1.5 text-xs font-semibold text-red-500 hover:bg-red-500/10 transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-2 rounded-none focus:bg-red-500/10 focus:text-red-500"
+                                >
+                                  <Trash2 className="w-3.5 h-3.5 shrink-0" />
+                                  <span>Delete User</span>
+                                </DropdownMenuItem>
+                              </DropdownMenuContent>
+                            </DropdownMenu>
                           </td>
                         </tr>
                       );
@@ -2672,12 +2882,12 @@ export function App() {
           {/* ADMIN TAB 3: SUBSCRIPTION MANAGEMENT */}
           {activeTab === 'admin_subscriptions' && (
             <div className="flex flex-col gap-6">
-              <div className="flex justify-between items-center border-b border-border pb-4">
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-border pb-4">
                 <div>
                   <h2 className="text-lg font-bold text-foreground">Subscription Catalog Management</h2>
                   <p className="text-xs text-muted-foreground">Manage and define subscription models, licensing thresholds, pricing & sizing caps</p>
                 </div>
-                <div className="flex items-center gap-3">
+                <div className="flex items-center justify-between sm:justify-start gap-3 w-full sm:w-auto">
                   {/* View Layout Switcher */}
                   <div className="flex border border-border bg-muted/20 p-0.5 rounded-none">
                     <button
@@ -2704,9 +2914,9 @@ export function App() {
 
                   <button
                     onClick={() => setShowAddPlanModal(true)}
-                    className="bg-primary hover:bg-primary/90 text-primary-foreground text-xs font-bold px-4 py-2.5 rounded-none flex items-center gap-2 shadow cursor-pointer"
+                    className="flex-1 sm:flex-initial bg-primary hover:bg-primary/90 text-primary-foreground text-xs font-bold px-4 py-2.5 rounded-none flex items-center justify-center gap-2 shadow cursor-pointer shrink-0"
                   >
-                    <Plus className="w-4 h-4" />
+                    <Plus className="w-4 h-4 shrink-0" />
                     Define Plan
                   </button>
                 </div>
@@ -2715,7 +2925,7 @@ export function App() {
               {/* Conditional rendering based on view switcher state */}
               {subscriptionViewMode === 'table' ? (
                 /* Plans Table Layout - Matching User Table Style */
-                <div className="w-full overflow-x-auto">
+                <div className="w-full overflow-x-auto md:overflow-visible">
                   <table className="w-full text-left border-collapse">
                     <thead>
                       <tr className="bg-muted/40 border-b border-border text-xs font-bold text-muted-foreground">
@@ -2749,12 +2959,14 @@ export function App() {
                         const isMenuOpen = openActionMenuId === plan.id;
 
                         return (
-                          <tr key={plan.id} className="hover:bg-muted/10 transition-colors">
-                            <td className="p-4 py-3.5 flex items-center gap-3 font-semibold text-foreground">
-                              <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold shrink-0 ${colorClass}`}>
-                                {initials}
+                          <tr key={plan.id} className="hover:bg-muted/10 transition-colors whitespace-nowrap">
+                            <td className="p-4 py-3.5">
+                              <div className="flex items-center gap-3 font-semibold text-foreground">
+                                <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold shrink-0 ${colorClass}`}>
+                                  {initials}
+                                </div>
+                                <span>{plan.name}</span>
                               </div>
-                              <span>{plan.name}</span>
                             </td>
                             <td className="p-4 py-3.5 font-mono text-muted-foreground">{plan.id}</td>
                             <td className="p-4 py-3.5 font-mono font-bold text-foreground">₹{plan.price.toLocaleString()}</td>
@@ -2768,49 +2980,39 @@ export function App() {
                             <td className="p-4 py-3.5 font-mono font-bold text-foreground">₹{plan.maxCapital.toLocaleString()}</td>
                             <td className="p-4 py-3.5 font-mono text-muted-foreground">{plan.maxOpenPositions} positions</td>
                             <td className="p-4 py-3.5 text-right">
-                              <div className="relative inline-block text-left">
-                                <button
-                                  onClick={() => setOpenActionMenuId(isMenuOpen ? null : plan.id)}
-                                  className="p-1.5 rounded-none hover:bg-muted text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
-                                >
-                                  <MoreVertical className="w-4 h-4" />
-                                </button>
-                                {isMenuOpen && (
-                                  <>
-                                    <div className="fixed inset-0 z-10" onClick={() => setOpenActionMenuId(null)} />
-                                    <div className="absolute right-0 top-8 z-20 bg-card border border-border shadow-xl min-w-[150px] py-1 animate-zoom-in">
-                                      <button
-                                        onClick={() => {
-                                          openViewPlanDrawer(plan);
-                                          setOpenActionMenuId(null);
-                                        }}
-                                        className="w-full text-left px-4 py-2 text-xs font-semibold text-foreground hover:bg-muted transition-colors cursor-pointer"
-                                      >
-                                        View Details
-                                      </button>
-                                      <button
-                                        onClick={() => {
-                                          openEditPlanDrawer(plan);
-                                          setOpenActionMenuId(null);
-                                        }}
-                                        className="w-full text-left px-4 py-2 text-xs font-semibold text-foreground hover:bg-muted transition-colors cursor-pointer"
-                                      >
-                                        Edit Details
-                                      </button>
-                                      <div className="border-t border-border/60 my-1" />
-                                      <button
-                                        onClick={() => {
-                                          handleDeletePlan(plan.id);
-                                          setOpenActionMenuId(null);
-                                        }}
-                                        className="w-full text-left px-4 py-2 text-xs font-semibold text-red-500 hover:bg-red-500/10 transition-colors cursor-pointer"
-                                      >
-                                        Delete Plan
-                                      </button>
-                                    </div>
-                                  </>
-                                )}
-                              </div>
+                              <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                  <button
+                                    className="p-1.5 rounded-none hover:bg-muted text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
+                                  >
+                                    <MoreVertical className="w-4 h-4" />
+                                  </button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end" className="w-[140px] rounded-none bg-card border border-border shadow-xl p-0 py-1.5">
+                                  <DropdownMenuItem
+                                    onClick={() => openViewPlanDrawer(plan)}
+                                    className="w-full text-left px-3.5 py-1.5 text-xs font-semibold text-foreground hover:bg-muted transition-colors cursor-pointer flex items-center gap-2 rounded-none focus:bg-muted focus:text-foreground"
+                                  >
+                                    <Eye className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
+                                  <span>View Details</span>
+                                  </DropdownMenuItem>
+                                  <DropdownMenuItem
+                                    onClick={() => openEditPlanDrawer(plan)}
+                                    className="w-full text-left px-3.5 py-1.5 text-xs font-semibold text-foreground hover:bg-muted transition-colors cursor-pointer flex items-center gap-2 rounded-none focus:bg-muted focus:text-foreground"
+                                  >
+                                    <Pencil className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
+                                  <span>Edit Details</span>
+                                  </DropdownMenuItem>
+                                  <DropdownMenuSeparator className="bg-border/60 my-1 -mx-0" />
+                                  <DropdownMenuItem
+                                    onClick={() => handleDeletePlan(plan.id)}
+                                    className="w-full text-left px-3.5 py-1.5 text-xs font-semibold text-red-500 hover:bg-red-500/10 transition-colors cursor-pointer flex items-center gap-2 rounded-none focus:bg-red-500/10 focus:text-red-500"
+                                  >
+                                    <Trash2 className="w-3.5 h-3.5 shrink-0" />
+                                    <span>Delete Plan</span>
+                                  </DropdownMenuItem>
+                                </DropdownMenuContent>
+                              </DropdownMenu>
                             </td>
                           </tr>
                         );
@@ -2856,48 +3058,40 @@ export function App() {
                               <span className="text-lg font-black text-primary">₹{plan.price.toLocaleString()}</span>
                               
                               {/* Action Menu inside card top right */}
-                              <div className="relative inline-block text-left ml-2">
-                                <button
-                                  onClick={() => setOpenActionMenuId(isMenuOpen ? null : plan.id)}
-                                  className="p-1 rounded-none hover:bg-muted text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
-                                >
-                                  <MoreVertical className="w-3.5 h-3.5" />
-                                </button>
-                                {isMenuOpen && (
-                                  <>
-                                    <div className="fixed inset-0 z-10" onClick={() => setOpenActionMenuId(null)} />
-                                    <div className="absolute right-0 top-6 z-20 bg-card border border-border shadow-xl min-w-[130px] py-1 animate-zoom-in">
-                                      <button
-                                        onClick={() => {
-                                          openViewPlanDrawer(plan);
-                                          setOpenActionMenuId(null);
-                                        }}
-                                        className="w-full text-left px-3 py-1.5 text-xs font-semibold text-foreground hover:bg-muted transition-colors cursor-pointer"
-                                      >
-                                        View Details
-                                      </button>
-                                      <button
-                                        onClick={() => {
-                                          openEditPlanDrawer(plan);
-                                          setOpenActionMenuId(null);
-                                        }}
-                                        className="w-full text-left px-3 py-1.5 text-xs font-semibold text-foreground hover:bg-muted transition-colors cursor-pointer"
-                                      >
-                                        Edit Details
-                                      </button>
-                                      <div className="border-t border-border/60 my-1" />
-                                      <button
-                                        onClick={() => {
-                                          handleDeletePlan(plan.id);
-                                          setOpenActionMenuId(null);
-                                        }}
-                                        className="w-full text-left px-3 py-1.5 text-xs font-semibold text-red-500 hover:bg-red-500/10 transition-colors cursor-pointer"
-                                      >
-                                        Delete Plan
-                                      </button>
-                                    </div>
-                                  </>
-                                )}
+                              <div className="ml-2">
+                                <DropdownMenu>
+                                  <DropdownMenuTrigger asChild>
+                                    <button
+                                      className="p-1 rounded-none hover:bg-muted text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
+                                    >
+                                      <MoreVertical className="w-3.5 h-3.5" />
+                                    </button>
+                                  </DropdownMenuTrigger>
+                                  <DropdownMenuContent align="end" className="w-[140px] rounded-none bg-card border border-border shadow-xl p-0 py-1.5">
+                                    <DropdownMenuItem
+                                      onClick={() => openViewPlanDrawer(plan)}
+                                      className="w-full text-left px-3.5 py-1.5 text-xs font-semibold text-foreground hover:bg-muted transition-colors cursor-pointer flex items-center gap-2 rounded-none focus:bg-muted focus:text-foreground"
+                                    >
+                                      <Eye className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
+                                      <span>View Details</span>
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem
+                                      onClick={() => openEditPlanDrawer(plan)}
+                                      className="w-full text-left px-3.5 py-1.5 text-xs font-semibold text-foreground hover:bg-muted transition-colors cursor-pointer flex items-center gap-2 rounded-none focus:bg-muted focus:text-foreground"
+                                    >
+                                      <Pencil className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
+                                      <span>Edit Details</span>
+                                    </DropdownMenuItem>
+                                    <DropdownMenuSeparator className="bg-border/60 my-1 -mx-0" />
+                                    <DropdownMenuItem
+                                      onClick={() => handleDeletePlan(plan.id)}
+                                      className="w-full text-left px-3.5 py-1.5 text-xs font-semibold text-red-500 hover:bg-red-500/10 transition-colors cursor-pointer flex items-center gap-2 rounded-none focus:bg-red-500/10 focus:text-red-500"
+                                    >
+                                      <Trash2 className="w-3.5 h-3.5 shrink-0" />
+                                      <span>Delete Plan</span>
+                                    </DropdownMenuItem>
+                                  </DropdownMenuContent>
+                                </DropdownMenu>
                               </div>
                             </div>
                           </div>
@@ -2932,12 +3126,12 @@ export function App() {
           {/* ADMIN TAB 4: BROKER MANAGEMENT */}
           {activeTab === 'admin_brokers' && (
             <div className="flex flex-col gap-6">
-              <div className="flex justify-between items-center border-b border-border pb-4">
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-border pb-4">
                 <div>
                   <h2 className="text-lg font-bold text-foreground">Broker Gateway Configurations</h2>
                   <p className="text-xs text-muted-foreground">Manage active connection states and credentials routing flags for supported Indian Brokers</p>
                 </div>
-                <div className="flex items-center gap-3">
+                <div className="flex items-center justify-between sm:justify-start gap-3 w-full sm:w-auto">
                   <div className="flex border border-border bg-muted/20 p-0.5 rounded-none">
                     <button
                       type="button"
@@ -2965,7 +3159,7 @@ export function App() {
 
               {brokerViewMode === 'table' ? (
                 /* Supported Brokers Table Layout */
-                <div className="w-full overflow-x-auto">
+                <div className="w-full overflow-x-auto md:overflow-visible">
                   <table className="w-full text-left border-collapse">
                     <thead>
                       <tr className="bg-muted/40 border-b border-border text-xs font-bold text-muted-foreground">
@@ -2996,12 +3190,14 @@ export function App() {
                         const colorClass = avatarColors[Math.abs(hash) % avatarColors.length];
 
                         return (
-                          <tr key={broker.id} className="hover:bg-muted/10 transition-colors">
-                            <td className="p-4 py-3.5 flex items-center gap-3 font-semibold text-foreground">
-                              <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold shrink-0 ${colorClass}`}>
-                                {initials}
+                          <tr key={broker.id} className="hover:bg-muted/10 transition-colors whitespace-nowrap">
+                            <td className="p-4 py-3.5">
+                              <div className="flex items-center gap-3 font-semibold text-foreground">
+                                <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold shrink-0 ${colorClass}`}>
+                                  {initials}
+                                </div>
+                                <span>{broker.name}</span>
                               </div>
-                              <span>{broker.name}</span>
                             </td>
                             <td className="p-4 py-3.5 font-mono text-muted-foreground">{broker.id}</td>
                             <td className="p-4 py-3.5 text-muted-foreground">Live API SDK Handshake (KiteConnect v3)</td>
@@ -3014,65 +3210,68 @@ export function App() {
                               </span>
                             </td>
                             <td className="p-4 py-3.5 text-right">
-                              <div className="relative inline-block text-left">
-                                <button
-                                  onClick={() => setOpenActionMenuId(openActionMenuId === broker.id ? null : broker.id)}
-                                  className="p-1.5 rounded-none hover:bg-muted text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
-                                >
-                                  <MoreVertical className="w-3.5 h-3.5" />
-                                </button>
-                                {openActionMenuId === broker.id && (
-                                  <>
-                                    <div className="fixed inset-0 z-10" onClick={() => setOpenActionMenuId(null)} />
-                                    <div className="absolute right-0 top-6 z-20 bg-card border border-border shadow-xl min-w-[130px] py-1 animate-zoom-in text-left">
-                                      <button
-                                        onClick={() => {
-                                          setSelectedBrokerForView(broker);
-                                          setShowViewBrokerModal(true);
-                                          setOpenActionMenuId(null);
-                                        }}
-                                        className="w-full text-left px-3 py-1.5 text-xs font-semibold text-foreground hover:bg-muted transition-colors cursor-pointer"
-                                      >
-                                        View Details
-                                      </button>
-                                      <button
-                                        onClick={() => {
-                                          setSelectedBrokerForEdit(broker);
-                                          setEditBrokerName(broker.name);
-                                          setEditBrokerId(broker.id);
-                                          setShowEditBrokerModal(true);
-                                          setOpenActionMenuId(null);
-                                        }}
-                                        className="w-full text-left px-3 py-1.5 text-xs font-semibold text-foreground hover:bg-muted transition-colors cursor-pointer"
-                                      >
-                                        Edit Details
-                                      </button>
-                                      <button
-                                        onClick={() => {
-                                          handleToggleBroker(broker.id);
-                                          setOpenActionMenuId(null);
-                                        }}
-                                        className={`w-full text-left px-3 py-1.5 text-xs font-semibold hover:bg-muted transition-colors cursor-pointer ${
-                                          broker.enabled ? 'text-rose-500' : 'text-emerald-500'
-                                        }`}
-                                      >
-                                        {broker.enabled ? 'Disable Gateway' : 'Enable Gateway'}
-                                      </button>
-                                      <div className="border-t border-border/60 my-1" />
-                                      <button
-                                        onClick={() => {
-                                          setSelectedBrokerForDelete(broker);
-                                          setShowDeleteBrokerModal(true);
-                                          setOpenActionMenuId(null);
-                                        }}
-                                        className="w-full text-left px-3 py-1.5 text-xs font-semibold text-red-500 hover:bg-red-500/10 transition-colors cursor-pointer"
-                                      >
-                                        Delete Broker
-                                      </button>
-                                    </div>
-                                  </>
-                                )}
-                              </div>
+                              <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                  <button
+                                    className="p-1.5 rounded-none hover:bg-muted text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
+                                  >
+                                    <MoreVertical className="w-3.5 h-3.5" />
+                                  </button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end" className="w-[150px] rounded-none bg-card border border-border shadow-xl p-0 py-1.5">
+                                  <DropdownMenuItem
+                                    onClick={() => {
+                                      setSelectedBrokerForView(broker);
+                                      setShowViewBrokerModal(true);
+                                    }}
+                                    className="w-full text-left px-3.5 py-1.5 text-xs font-semibold text-foreground hover:bg-muted transition-colors cursor-pointer flex items-center gap-2 rounded-none focus:bg-muted focus:text-foreground"
+                                  >
+                                    <Eye className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
+                                  <span>View Details</span>
+                                  </DropdownMenuItem>
+                                  <DropdownMenuItem
+                                    onClick={() => {
+                                      setSelectedBrokerForEdit(broker);
+                                      setEditBrokerName(broker.name);
+                                      setEditBrokerId(broker.id);
+                                      setShowEditBrokerModal(true);
+                                    }}
+                                    className="w-full text-left px-3.5 py-1.5 text-xs font-semibold text-foreground hover:bg-muted transition-colors cursor-pointer flex items-center gap-2 rounded-none focus:bg-muted focus:text-foreground"
+                                  >
+                                    <Pencil className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
+                                  <span>Edit Details</span>
+                                  </DropdownMenuItem>
+                                  <DropdownMenuItem
+                                    onClick={() => handleToggleBroker(broker.id)}
+                                    className={`w-full text-left px-3.5 py-1.5 text-xs font-semibold transition-colors cursor-pointer flex items-center gap-2 rounded-none focus:bg-muted ${
+                                      broker.enabled ? 'text-rose-500 focus:text-rose-500 focus:bg-rose-500/10' : 'text-emerald-500 focus:text-emerald-500 focus:bg-emerald-500/10'
+                                    }`}
+                                  >
+                                    {broker.enabled ? (
+                                      <>
+                                        <Ban className="w-3.5 h-3.5 shrink-0" />
+                                        <span>Disable Gateway</span>
+                                      </>
+                                    ) : (
+                                      <>
+                                        <CheckCircle2 className="w-3.5 h-3.5 shrink-0 text-emerald-500" />
+                                        <span>Enable Gateway</span>
+                                      </>
+                                    )}
+                                  </DropdownMenuItem>
+                                  <DropdownMenuSeparator className="bg-border/60 my-1 -mx-0" />
+                                  <DropdownMenuItem
+                                    onClick={() => {
+                                      setSelectedBrokerForDelete(broker);
+                                      setShowDeleteBrokerModal(true);
+                                    }}
+                                    className="w-full text-left px-3.5 py-1.5 text-xs font-semibold text-red-500 hover:bg-red-500/10 transition-colors cursor-pointer flex items-center gap-2 rounded-none focus:bg-red-500/10 focus:text-red-500"
+                                  >
+                                    <Trash2 className="w-3.5 h-3.5 shrink-0" />
+                                    <span>Delete Broker</span>
+                                  </DropdownMenuItem>
+                                </DropdownMenuContent>
+                              </DropdownMenu>
                             </td>
                           </tr>
                         );
@@ -3118,64 +3317,69 @@ export function App() {
                             }`}>
                               {broker.enabled ? 'Enabled' : 'Disabled'}
                             </span>
-                            <div className="relative">
-                              <button
-                                onClick={() => setOpenActionMenuId(openActionMenuId === broker.id ? null : broker.id)}
-                                className="p-1 rounded-none hover:bg-muted text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
-                              >
-                                <MoreVertical className="w-3.5 h-3.5" />
-                              </button>
-                              {openActionMenuId === broker.id && (
-                                <>
-                                  <div className="fixed inset-0 z-10" onClick={() => setOpenActionMenuId(null)} />
-                                  <div className="absolute right-0 top-6 z-20 bg-card border border-border shadow-xl min-w-[130px] py-1 animate-zoom-in text-left">
-                                    <button
-                                      onClick={() => {
-                                        setSelectedBrokerForView(broker);
-                                        setShowViewBrokerModal(true);
-                                        setOpenActionMenuId(null);
-                                      }}
-                                      className="w-full text-left px-3 py-1.5 text-xs font-semibold text-foreground hover:bg-muted transition-colors cursor-pointer"
-                                    >
-                                      View Details
-                                    </button>
-                                    <button
-                                      onClick={() => {
-                                        setSelectedBrokerForEdit(broker);
-                                        setEditBrokerName(broker.name);
-                                        setEditBrokerId(broker.id);
-                                        setShowEditBrokerModal(true);
-                                        setOpenActionMenuId(null);
-                                      }}
-                                      className="w-full text-left px-3 py-1.5 text-xs font-semibold text-foreground hover:bg-muted transition-colors cursor-pointer"
-                                    >
-                                      Edit Details
-                                    </button>
-                                    <button
-                                      onClick={() => {
-                                        handleToggleBroker(broker.id);
-                                        setOpenActionMenuId(null);
-                                      }}
-                                      className={`w-full text-left px-3 py-1.5 text-xs font-semibold hover:bg-muted transition-colors cursor-pointer ${
-                                        broker.enabled ? 'text-rose-500' : 'text-emerald-500'
-                                      }`}
-                                    >
-                                      {broker.enabled ? 'Disable Gateway' : 'Enable Gateway'}
-                                    </button>
-                                    <div className="border-t border-border/60 my-1" />
-                                    <button
-                                      onClick={() => {
-                                        setSelectedBrokerForDelete(broker);
-                                        setShowDeleteBrokerModal(true);
-                                        setOpenActionMenuId(null);
-                                      }}
-                                      className="w-full text-left px-3 py-1.5 text-xs font-semibold text-red-500 hover:bg-red-500/10 transition-colors cursor-pointer"
-                                    >
-                                      Delete Broker
-                                    </button>
-                                  </div>
-                                </>
-                              )}
+                            <div>
+                              <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                  <button
+                                    className="p-1 rounded-none hover:bg-muted text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
+                                  >
+                                    <MoreVertical className="w-3.5 h-3.5" />
+                                  </button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end" className="w-[150px] rounded-none bg-card border border-border shadow-xl p-0 py-1.5">
+                                  <DropdownMenuItem
+                                    onClick={() => {
+                                      setSelectedBrokerForView(broker);
+                                      setShowViewBrokerModal(true);
+                                    }}
+                                    className="w-full text-left px-3.5 py-1.5 text-xs font-semibold text-foreground hover:bg-muted transition-colors cursor-pointer flex items-center gap-2 rounded-none focus:bg-muted focus:text-foreground"
+                                  >
+                                    <Eye className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
+                                    <span>View Details</span>
+                                  </DropdownMenuItem>
+                                  <DropdownMenuItem
+                                    onClick={() => {
+                                      setSelectedBrokerForEdit(broker);
+                                      setEditBrokerName(broker.name);
+                                      setEditBrokerId(broker.id);
+                                      setShowEditBrokerModal(true);
+                                    }}
+                                    className="w-full text-left px-3.5 py-1.5 text-xs font-semibold text-foreground hover:bg-muted transition-colors cursor-pointer flex items-center gap-2 rounded-none focus:bg-muted focus:text-foreground"
+                                  >
+                                    <Pencil className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
+                                    <span>Edit Details</span>
+                                  </DropdownMenuItem>
+                                  <DropdownMenuItem
+                                    onClick={() => handleToggleBroker(broker.id)}
+                                    className={`w-full text-left px-3.5 py-1.5 text-xs font-semibold transition-colors cursor-pointer flex items-center gap-2 rounded-none focus:bg-muted ${
+                                      broker.enabled ? 'text-rose-500 focus:text-rose-500 focus:bg-rose-500/10' : 'text-emerald-500 focus:text-emerald-500 focus:bg-emerald-500/10'
+                                    }`}
+                                  >
+                                    {broker.enabled ? (
+                                      <>
+                                        <Ban className="w-3.5 h-3.5 shrink-0" />
+                                        <span>Disable Gateway</span>
+                                      </>
+                                    ) : (
+                                      <>
+                                        <CheckCircle2 className="w-3.5 h-3.5 shrink-0 text-emerald-500" />
+                                        <span>Enable Gateway</span>
+                                      </>
+                                    )}
+                                  </DropdownMenuItem>
+                                  <DropdownMenuSeparator className="bg-border/60 my-1 -mx-0" />
+                                  <DropdownMenuItem
+                                    onClick={() => {
+                                      setSelectedBrokerForDelete(broker);
+                                      setShowDeleteBrokerModal(true);
+                                    }}
+                                    className="w-full text-left px-3.5 py-1.5 text-xs font-semibold text-red-500 hover:bg-red-500/10 transition-colors cursor-pointer flex items-center gap-2 rounded-none focus:bg-red-500/10 focus:text-red-500"
+                                  >
+                                    <Trash2 className="w-3.5 h-3.5 shrink-0" />
+                                    <span>Delete Broker</span>
+                                  </DropdownMenuItem>
+                                </DropdownMenuContent>
+                              </DropdownMenu>
                             </div>
                           </div>
                         </div>
@@ -3201,9 +3405,11 @@ export function App() {
           {/* ADMIN TAB 5: TRADING MANAGEMENT */}
           {activeTab === 'admin_trading' && (
             <div className="flex flex-col gap-6">
-              <div className="border-b border-border pb-4">
-                <h2 className="text-lg font-bold text-foreground">Platform Trading Management</h2>
-                <p className="text-xs text-muted-foreground">Monitor running strategy instances, view system-wide transaction metrics and order execution flows</p>
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-border pb-4">
+                <div>
+                  <h2 className="text-lg font-bold text-foreground">Platform Trading Management</h2>
+                  <p className="text-xs text-muted-foreground">Monitor running strategy instances, view system-wide transaction metrics and order execution flows</p>
+                </div>
               </div>
 
               {/* Running Strategies Table */}
@@ -3211,19 +3417,19 @@ export function App() {
                 <h3 className="text-sm font-bold text-foreground mb-4">Active Deployments</h3>
                 <div className="space-y-3">
                   {strategies.map(strat => (
-                    <div key={strat.id} className="flex justify-between items-center p-3 rounded-none border border-border bg-background/50 text-xs">
+                    <div key={strat.id} className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 p-3 rounded-none border border-border bg-background/50 text-xs">
                       <div>
                         <p className="font-bold text-foreground">{strat.name}</p>
                         <p className="text-muted-foreground text-[10px]">{strat.instrument} • {strat.type}</p>
                       </div>
-                      <div className="flex items-center gap-4">
+                      <div className="flex flex-wrap items-center gap-3 sm:gap-4 w-full sm:w-auto justify-between sm:justify-end border-t sm:border-t-0 border-border/40 pt-2 sm:pt-0 mt-2 sm:mt-0">
                         <span className="font-mono">Capital: ₹{strat.capital.toLocaleString()}</span>
                         <span className={`font-mono font-bold ${strat.pnl >= 0 ? 'text-emerald-500' : 'text-rose-500'}`}>
                           PNL: ₹{strat.pnl.toLocaleString()}
                         </span>
                         <button
                           onClick={() => handleToggleStrategy(strat.id)}
-                          className={`px-3 py-1.5 rounded-none font-bold ${
+                          className={`px-3 py-1.5 rounded-none font-bold cursor-pointer ${
                             strat.status === 'active'
                               ? 'bg-rose-500/10 text-rose-500 border border-rose-500/20'
                               : 'bg-emerald-500/10 text-emerald-500 border border-emerald-500/20'
@@ -3242,9 +3448,11 @@ export function App() {
           {/* ADMIN TAB 6: RISK MANAGEMENT */}
           {activeTab === 'admin_risk' && (
             <div className="flex flex-col gap-6">
-              <div className="border-b border-border pb-4">
-                <h2 className="text-lg font-bold text-foreground">Global Platform Risk Controls</h2>
-                <p className="text-xs text-muted-foreground">Admin panel to configure maximum limit limits, daily trades capping, and safety thresholds</p>
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-border pb-4">
+                <div>
+                  <h2 className="text-lg font-bold text-foreground">Global Platform Risk Controls</h2>
+                  <p className="text-xs text-muted-foreground">Admin panel to configure maximum limit limits, daily trades capping, and safety thresholds</p>
+                </div>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -3292,12 +3500,12 @@ export function App() {
           {/* ADMIN TAB 7: SIGNAL MANAGEMENT */}
           {activeTab === 'admin_signals' && (
             <div className="flex flex-col gap-6">
-              <div className="flex justify-between items-center border-b border-border pb-4">
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-border pb-4">
                 <div>
                   <h2 className="text-lg font-bold text-foreground">Signal Station Console</h2>
                   <p className="text-xs text-muted-foreground">Broadcast manual Buy/Sell trading signals to all connected strategy subscribers</p>
                 </div>
-                <div className="flex items-center gap-3">
+                <div className="flex items-center justify-between sm:justify-start gap-3 w-full sm:w-auto">
                   <div className="flex border border-border bg-muted/20 p-0.5 rounded-none">
                     <button
                       type="button"
@@ -3322,9 +3530,9 @@ export function App() {
                   </div>
                   <button
                     onClick={() => setShowBroadcastSignalModal(true)}
-                    className="bg-primary hover:bg-primary/90 text-primary-foreground text-xs font-bold px-4 py-2.5 rounded-none flex items-center gap-2 shadow cursor-pointer"
+                    className="flex-1 sm:flex-initial bg-primary hover:bg-primary/90 text-primary-foreground text-xs font-bold px-4 py-2.5 rounded-none flex items-center justify-center gap-2 shadow cursor-pointer shrink-0"
                   >
-                    <Plus className="w-4 h-4" />
+                    <Plus className="w-4 h-4 shrink-0" />
                     Broadcast Trade Signal
                   </button>
                 </div>
@@ -3332,7 +3540,7 @@ export function App() {
 
               {signalViewMode === 'table' ? (
                 /* Past Signals Table */
-                <div className="w-full overflow-x-auto">
+                <div className="w-full overflow-x-auto md:overflow-visible">
                   <table className="w-full text-left border-collapse">
                     <thead>
                       <tr className="bg-muted/40 border-b border-border text-xs font-bold text-muted-foreground">
@@ -3346,8 +3554,9 @@ export function App() {
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-border/60 text-xs font-mono">
-                      {signalsList.map(sig => (
-                        <tr key={sig.id} className="hover:bg-muted/10 transition-colors">
+                      {signalsList.map(sig => {
+                        return (
+                          <tr key={sig.id} className="hover:bg-muted/10 transition-colors whitespace-nowrap">
                           <td className="p-4 py-3.5 font-bold">{sig.id}</td>
                           <td className="p-4 py-3.5 text-foreground font-semibold font-sans">{sig.instrument}</td>
                           <td className="p-4 py-3.5">
@@ -3365,45 +3574,41 @@ export function App() {
                             </span>
                           </td>
                           <td className="p-4 py-3.5 text-right">
-                            <div className="relative inline-block text-left">
-                              <button
-                                onClick={() => setOpenActionMenuId(openActionMenuId === sig.id ? null : sig.id)}
-                                className="p-1.5 rounded-none hover:bg-muted text-muted-foreground hover:text-foreground transition-colors cursor-pointer font-sans"
-                              >
-                                <MoreVertical className="w-3.5 h-3.5" />
-                              </button>
-                              {openActionMenuId === sig.id && (
-                                <>
-                                  <div className="fixed inset-0 z-10" onClick={() => setOpenActionMenuId(null)} />
-                                  <div className="absolute right-0 top-6 z-20 bg-card border border-border shadow-xl min-w-[130px] py-1 animate-zoom-in text-left">
-                                    <button
-                                      onClick={() => {
-                                        setSelectedSignalForView(sig);
-                                        setShowViewSignalModal(true);
-                                        setOpenActionMenuId(null);
-                                      }}
-                                      className="w-full text-left px-3 py-1.5 text-xs font-semibold text-foreground hover:bg-muted transition-colors cursor-pointer font-sans"
-                                    >
-                                      View Details
-                                    </button>
-                                    <div className="border-t border-border/60 my-1" />
-                                    <button
-                                      onClick={() => {
-                                        setSelectedSignalForDelete(sig);
-                                        setShowDeleteSignalModal(true);
-                                        setOpenActionMenuId(null);
-                                      }}
-                                      className="w-full text-left px-3 py-1.5 text-xs font-semibold text-red-500 hover:bg-red-500/10 transition-colors cursor-pointer font-sans"
-                                    >
-                                      Delete Signal
-                                    </button>
-                                  </div>
-                                </>
-                              )}
-                            </div>
+                            <DropdownMenu>
+                              <DropdownMenuTrigger asChild>
+                                <button
+                                  className="p-1.5 rounded-none hover:bg-muted text-muted-foreground hover:text-foreground transition-colors cursor-pointer font-sans"
+                                >
+                                  <MoreVertical className="w-3.5 h-3.5" />
+                                </button>
+                              </DropdownMenuTrigger>
+                              <DropdownMenuContent align="end" className="w-[140px] rounded-none bg-card border border-border shadow-xl p-0 py-1.5">
+                                <DropdownMenuItem
+                                  onClick={() => {
+                                    setSelectedSignalForView(sig);
+                                    setShowViewSignalModal(true);
+                                  }}
+                                  className="w-full text-left px-3.5 py-1.5 text-xs font-semibold text-foreground hover:bg-muted transition-colors cursor-pointer flex items-center gap-2 font-sans rounded-none focus:bg-muted focus:text-foreground"
+                                >
+                                  <Eye className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
+                                  <span>View Details</span>
+                                </DropdownMenuItem>
+                                <DropdownMenuSeparator className="bg-border/60 my-1 -mx-0" />
+                                <DropdownMenuItem
+                                  onClick={() => {
+                                    setSelectedSignalForDelete(sig);
+                                    setShowDeleteSignalModal(true);
+                                  }}
+                                  className="w-full text-left px-3.5 py-1.5 text-xs font-semibold text-red-500 hover:bg-red-500/10 transition-colors cursor-pointer flex items-center gap-2 font-sans rounded-none focus:bg-red-500/10 focus:text-red-500"
+                                >
+                                  <Trash2 className="w-3.5 h-3.5 shrink-0" />
+                                  <span>Delete Signal</span>
+                                </DropdownMenuItem>
+                              </DropdownMenuContent>
+                            </DropdownMenu>
                           </td>
                         </tr>
-                      ))}
+                      ); })}
                     </tbody>
                   </table>
                 </div>
@@ -3430,41 +3635,39 @@ export function App() {
                             <span className="px-2 py-0.5 rounded text-[10px] bg-primary/10 text-primary border border-primary/20 font-bold capitalize">
                               {sig.status}
                             </span>
-                            <div className="relative">
-                              <button
-                                onClick={() => setOpenActionMenuId(openActionMenuId === sig.id ? null : sig.id)}
-                                className="p-1 rounded-none hover:bg-muted text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
-                              >
-                                <MoreVertical className="w-3.5 h-3.5" />
-                              </button>
-                              {openActionMenuId === sig.id && (
-                                <>
-                                  <div className="fixed inset-0 z-10" onClick={() => setOpenActionMenuId(null)} />
-                                  <div className="absolute right-0 top-6 z-20 bg-card border border-border shadow-xl min-w-[130px] py-1 animate-zoom-in text-left">
-                                    <button
-                                      onClick={() => {
-                                        setSelectedSignalForView(sig);
-                                        setShowViewSignalModal(true);
-                                        setOpenActionMenuId(null);
-                                      }}
-                                      className="w-full text-left px-3 py-1.5 text-xs font-semibold text-foreground hover:bg-muted transition-colors cursor-pointer"
-                                    >
-                                      View Details
-                                    </button>
-                                    <div className="border-t border-border/60 my-1" />
-                                    <button
-                                      onClick={() => {
-                                        setSelectedSignalForDelete(sig);
-                                        setShowDeleteSignalModal(true);
-                                        setOpenActionMenuId(null);
-                                      }}
-                                      className="w-full text-left px-3 py-1.5 text-xs font-semibold text-red-500 hover:bg-red-500/10 transition-colors cursor-pointer"
-                                    >
-                                      Delete Signal
-                                    </button>
-                                  </div>
-                                </>
-                              )}
+                            <div>
+                              <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                  <button
+                                    className="p-1 rounded-none hover:bg-muted text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
+                                  >
+                                    <MoreVertical className="w-3.5 h-3.5" />
+                                  </button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end" className="w-[140px] rounded-none bg-card border border-border shadow-xl p-0 py-1.5">
+                                  <DropdownMenuItem
+                                    onClick={() => {
+                                      setSelectedSignalForView(sig);
+                                      setShowViewSignalModal(true);
+                                    }}
+                                    className="w-full text-left px-3.5 py-1.5 text-xs font-semibold text-foreground hover:bg-muted transition-colors cursor-pointer flex items-center gap-2 rounded-none focus:bg-muted focus:text-foreground"
+                                  >
+                                    <Eye className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
+                                    <span>View Details</span>
+                                  </DropdownMenuItem>
+                                  <DropdownMenuSeparator className="bg-border/60 my-1 -mx-0" />
+                                  <DropdownMenuItem
+                                    onClick={() => {
+                                      setSelectedSignalForDelete(sig);
+                                      setShowDeleteSignalModal(true);
+                                    }}
+                                    className="w-full text-left px-3.5 py-1.5 text-xs font-semibold text-red-500 hover:bg-red-500/10 transition-colors cursor-pointer flex items-center gap-2 rounded-none focus:bg-red-500/10 focus:text-red-500"
+                                  >
+                                    <Trash2 className="w-3.5 h-3.5 shrink-0" />
+                                    <span>Delete Signal</span>
+                                  </DropdownMenuItem>
+                                </DropdownMenuContent>
+                              </DropdownMenu>
                             </div>
                           </div>
                         </div>
@@ -3494,13 +3697,15 @@ export function App() {
           {/* ADMIN TAB 8: PAYMENT CONTROL */}
           {activeTab === 'admin_payments' && (
             <div className="flex flex-col gap-6">
-              <div className="border-b border-border pb-4">
-                <h2 className="text-lg font-bold text-foreground">Invoice & Payment Controls</h2>
-                <p className="text-xs text-muted-foreground">Review account licensing transactions, download invoices and manage subscription payments</p>
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-border pb-4">
+                <div>
+                  <h2 className="text-lg font-bold text-foreground">Invoice & Payment Controls</h2>
+                  <p className="text-xs text-muted-foreground">Review account licensing transactions, download invoices and manage subscription payments</p>
+                </div>
               </div>
 
               {/* Transactions Ledger */}
-              <div className="w-full overflow-x-auto">
+              <div className="w-full overflow-x-auto md:overflow-visible">
                 <table className="w-full text-left border-collapse">
                   <thead>
                     <tr className="bg-muted/40 border-b border-border text-xs font-bold text-muted-foreground">
@@ -3515,7 +3720,7 @@ export function App() {
                   </thead>
                   <tbody className="divide-y divide-border/60 text-xs">
                     {paymentsList.map(pay => (
-                      <tr key={pay.id} className="hover:bg-muted/10 font-mono transition-colors">
+                      <tr key={pay.id} className="hover:bg-muted/10 font-mono transition-colors whitespace-nowrap">
                         <td className="p-4 py-3.5 font-bold">{pay.id}</td>
                         <td className="p-4 py-3.5 text-foreground font-semibold">{pay.userEmail}</td>
                         <td className="p-4 py-3.5">{pay.planName}</td>
@@ -3545,9 +3750,11 @@ export function App() {
           {/* ADMIN TAB 9: REPORTS & SHEETS */}
           {activeTab === 'admin_reports' && (
             <div className="flex flex-col gap-6">
-              <div className="border-b border-border pb-4">
-                <h2 className="text-lg font-bold text-foreground">Analytics Sheets & Audits</h2>
-                <p className="text-xs text-muted-foreground">Export and examine user-wise strategy yields and trade performance spreadsheets</p>
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-border pb-4">
+                <div>
+                  <h2 className="text-lg font-bold text-foreground">Analytics Sheets & Audits</h2>
+                  <p className="text-xs text-muted-foreground">Export and examine user-wise strategy yields and trade performance spreadsheets</p>
+                </div>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -3590,9 +3797,11 @@ export function App() {
           {/* ADMIN TAB 10: NOTIFICATIONS CENTER */}
           {activeTab === 'admin_notifications' && (
             <div className="flex flex-col gap-6">
-              <div className="border-b border-border pb-4">
-                <h2 className="text-lg font-bold text-foreground">Alert Template Broadcast Center</h2>
-                <p className="text-xs text-muted-foreground">Send real-time alerts or system notifications directly to the live screens of connected retail users</p>
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-border pb-4">
+                <div>
+                  <h2 className="text-lg font-bold text-foreground">Alert Template Broadcast Center</h2>
+                  <p className="text-xs text-muted-foreground">Send real-time alerts or system notifications directly to the live screens of connected retail users</p>
+                </div>
               </div>
 
               <div className="bg-card border border-border p-5 rounded-none max-w-lg">
@@ -3624,9 +3833,11 @@ export function App() {
           {/* ADMIN TAB 11: SYSTEM SETTINGS */}
           {activeTab === 'admin_settings' && (
             <div className="flex flex-col gap-6">
-              <div className="border-b border-border pb-4">
-                <h2 className="text-lg font-bold text-foreground">System & API Configurations</h2>
-                <p className="text-xs text-muted-foreground">Adjust server database synchronization and security timeouts</p>
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-border pb-4">
+                <div>
+                  <h2 className="text-lg font-bold text-foreground">System & API Configurations</h2>
+                  <p className="text-xs text-muted-foreground">Adjust server database synchronization and security timeouts</p>
+                </div>
               </div>
 
               <div className="bg-card border border-border p-5 rounded-none max-w-lg space-y-4 text-xs">
@@ -3659,18 +3870,21 @@ export function App() {
           {/* ADMIN TAB 12: AUDIT LOGS */}
           {activeTab === 'admin_audit' && (
             <div className="flex flex-col gap-6">
-              <div className="border-b border-border pb-4">
-                <h2 className="text-lg font-bold text-foreground">Audit Compliance Log</h2>
-                <p className="text-xs text-muted-foreground">Secured ledger recording user logins, status modifications, and risk limit changes</p>
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-border pb-4">
+                <div>
+                  <h2 className="text-lg font-bold text-foreground">Audit Compliance Log</h2>
+                  <p className="text-xs text-muted-foreground">Secured ledger recording user logins, status modifications, and risk limit changes</p>
+                </div>
               </div>
 
               <div className="bg-background border border-border rounded-none p-5 font-mono text-[12px] overflow-y-auto max-h-[500px]">
                 {auditLogsList.map((log, idx) => (
-                  <div key={idx} className="flex gap-3 hover:bg-muted/10 py-1 px-2 rounded border-b border-border/20 last:border-0">
-                    <span className="text-muted-foreground select-none">[{new Date(log.timestamp).toLocaleTimeString()}]</span>
-                    <span className="text-primary font-bold">[{log.type.toUpperCase()}]</span>
-                    <span className="text-muted-foreground font-bold">{log.source}:</span>
-                    <span className="text-foreground/90">{log.message}</span>
+                  <div key={idx} className="flex flex-col sm:flex-row items-start sm:items-center gap-1 sm:gap-3 hover:bg-muted/10 py-2 sm:py-1 px-2 rounded-none border-b border-border/20 last:border-0">
+                    <div className="flex items-center gap-2 shrink-0">
+                      <span className="text-muted-foreground select-none">[{new Date(log.timestamp).toLocaleTimeString()}]</span>
+                      <span className="text-primary font-bold">[{log.type.toUpperCase()}]</span>
+                    </div>
+                    <span className="text-foreground/90"><span className="text-muted-foreground font-bold">{log.source}:</span> {log.message}</span>
                   </div>
                 ))}
               </div>
@@ -3682,19 +3896,19 @@ export function App() {
           {/* USER TAB 1: OVERVIEW TERMINAL */}
           {activeTab === 'user_dashboard' && (
             <div className="flex flex-col gap-6">
-              <div className="flex justify-between items-center border-b border-border pb-4">
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-border pb-4">
                 <div>
                   <h2 className="text-lg font-bold text-foreground">Trading Overview</h2>
-                  <p className="text-xs text-muted-foreground">Welcome back, ${user?.name}. Monitor algorithms, active positions and margins.</p>
+                  <p className="text-xs text-muted-foreground">Welcome back, {user?.name}. Monitor algorithms, active positions and margins.</p>
                 </div>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center justify-between sm:justify-start gap-2 w-full sm:w-auto">
                   <span className="text-xs font-semibold text-muted-foreground">Auto-Trading Status:</span>
                   <button
                     onClick={() => {
                       setIsAutoTradingOn(prev => !prev);
                       addToast(isAutoTradingOn ? 'warning' : 'success', 'Auto-Trading Switch', `Automated trades placement has been ${isAutoTradingOn ? 'PAUSED' : 'RESUMED'}`);
                     }}
-                    className={`px-3 py-1.5 rounded-none text-xs font-bold border transition-colors ${
+                    className={`flex-1 sm:flex-initial px-3 py-1.5 rounded-none text-xs font-bold border transition-colors cursor-pointer text-center ${
                       isAutoTradingOn
                         ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20'
                         : 'bg-rose-500/10 text-rose-500 border-rose-500/20'
@@ -3825,9 +4039,11 @@ export function App() {
           {/* USER TAB 2: BROKER CONNECTION */}
           {activeTab === 'user_broker' && (
             <div className="flex flex-col gap-6">
-              <div className="border-b border-border pb-4">
-                <h2 className="text-lg font-bold text-foreground">Broker Credentials Connection</h2>
-                <p className="text-xs text-muted-foreground">Securely link your Indian broker API to route algorithmic trades directly into your demat</p>
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-border pb-4">
+                <div>
+                  <h2 className="text-lg font-bold text-foreground">Broker Credentials Connection</h2>
+                  <p className="text-xs text-muted-foreground">Securely link your Indian broker API to route algorithmic trades directly into your demat</p>
+                </div>
               </div>
 
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -3921,7 +4137,7 @@ export function App() {
                             </div>
                             <button
                               onClick={() => handleDisconnectBroker(cred.id)}
-                              className="px-3.5 py-2 bg-rose-500/10 text-rose-500 hover:bg-rose-500/20 font-bold rounded-none border border-rose-500/20 text-center"
+                              className="w-full sm:w-auto px-3.5 py-2 bg-rose-500/10 text-rose-500 hover:bg-rose-500/20 font-bold rounded-none border border-rose-500/20 text-center shrink-0 cursor-pointer"
                             >
                               Sever Connection
                             </button>
@@ -3938,9 +4154,11 @@ export function App() {
           {/* USER TAB 3: SUBSCRIPTION PLAN */}
           {activeTab === 'user_subscription' && (
             <div className="flex flex-col gap-6">
-              <div className="border-b border-border pb-4">
-                <h2 className="text-lg font-bold text-foreground">License & Subscription</h2>
-                <p className="text-xs text-muted-foreground">View current subscription allocation settings and license constraints</p>
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-border pb-4">
+                <div>
+                  <h2 className="text-lg font-bold text-foreground">License & Subscription</h2>
+                  <p className="text-xs text-muted-foreground">View current subscription allocation settings and license constraints</p>
+                </div>
               </div>
 
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -4024,15 +4242,17 @@ export function App() {
           {/* USER TAB 4: TRADING SETTINGS */}
           {activeTab === 'user_trading_settings' && (
             <div className="flex flex-col gap-6">
-              <div className="border-b border-border pb-4">
-                <h2 className="text-lg font-bold text-foreground">Personalized Safety Limits & Risk Parameters</h2>
-                <p className="text-xs text-muted-foreground">Set your default lot sizes, stop loss rules, and maximum active positions</p>
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-border pb-4">
+                <div>
+                  <h2 className="text-lg font-bold text-foreground">Personalized Safety Limits & Risk Parameters</h2>
+                  <p className="text-xs text-muted-foreground">Set your default lot sizes, stop loss rules, and maximum active positions</p>
+                </div>
               </div>
 
               <div className="bg-card border border-border p-5 rounded-none max-w-lg shadow-sm">
                 <h3 className="text-sm font-bold text-foreground mb-4">Risk Controls Configuration</h3>
                 <form onSubmit={handleUpdateRiskSettings} className="space-y-4 text-xs">
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
                       <label className="block text-muted-foreground mb-1">Default Lot Size (Sizing)</label>
                       <input
@@ -4040,7 +4260,7 @@ export function App() {
                         required
                         value={riskDefaultLotSize}
                         onChange={(e) => setRiskDefaultLotSize(e.target.value)}
-                        className="w-full bg-background border border-border rounded-none px-3 py-2.5 outline-none text-foreground font-mono"
+                        className="w-full bg-background border border-border rounded-none px-3 py-2.5 outline-none text-foreground font-mono focus:border-primary"
                       />
                     </div>
                     <div>
@@ -4050,12 +4270,12 @@ export function App() {
                         required
                         value={riskDailyLimit}
                         onChange={(e) => setRiskDailyLimit(e.target.value)}
-                        className="w-full bg-background border border-border rounded-none px-3 py-2.5 outline-none text-foreground font-mono"
+                        className="w-full bg-background border border-border rounded-none px-3 py-2.5 outline-none text-foreground font-mono focus:border-primary"
                       />
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
                       <label className="block text-muted-foreground mb-1">Stop Loss Percentage (SL%)</label>
                       <input
@@ -4064,7 +4284,7 @@ export function App() {
                         required
                         value={riskStopLoss}
                         onChange={(e) => setRiskStopLoss(e.target.value)}
-                        className="w-full bg-background border border-border rounded-none px-3 py-2.5 outline-none text-foreground font-mono"
+                        className="w-full bg-background border border-border rounded-none px-3 py-2.5 outline-none text-foreground font-mono focus:border-primary"
                       />
                     </div>
                     <div>
@@ -4075,7 +4295,7 @@ export function App() {
                         required
                         value={riskTarget}
                         onChange={(e) => setRiskTarget(e.target.value)}
-                        className="w-full bg-background border border-border rounded-none px-3 py-2.5 outline-none text-foreground font-mono"
+                        className="w-full bg-background border border-border rounded-none px-3 py-2.5 outline-none text-foreground font-mono focus:border-primary"
                       />
                     </div>
                   </div>
@@ -4106,13 +4326,15 @@ export function App() {
           {/* USER TAB 5: ORDERS & REPORTS */}
           {activeTab === 'user_orders_reports' && (
             <div className="flex flex-col gap-6">
-              <div className="border-b border-border pb-4">
-                <h2 className="text-lg font-bold text-foreground">Transaction Ledgers & Reports</h2>
-                <p className="text-xs text-muted-foreground">Complete record of your demat buy and sell order fills</p>
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-border pb-4">
+                <div>
+                  <h2 className="text-lg font-bold text-foreground">Transaction Ledgers & Reports</h2>
+                  <p className="text-xs text-muted-foreground">Complete record of your demat buy and sell order fills</p>
+                </div>
               </div>
 
               {/* Orders ledger */}
-              <div className="w-full overflow-x-auto">
+              <div className="w-full overflow-x-auto md:overflow-visible">
                 <table className="w-full text-left border-collapse">
                   <thead>
                     <tr className="bg-muted/40 border-b border-border text-xs font-bold text-muted-foreground">
@@ -4127,7 +4349,7 @@ export function App() {
                   </thead>
                   <tbody className="divide-y divide-border/60 text-xs font-mono">
                     {trades.map(trade => (
-                      <tr key={trade.id} className="hover:bg-muted/10 transition-colors">
+                      <tr key={trade.id} className="hover:bg-muted/10 transition-colors whitespace-nowrap">
                         <td className="p-4 py-3.5 font-bold">{trade.id}</td>
                         <td className="p-4 py-3.5 text-foreground font-semibold">{trade.strategyName}</td>
                         <td className="p-4 py-3.5">{trade.instrument}</td>
@@ -4160,9 +4382,11 @@ export function App() {
           {/* USER TAB 6: PROFILE & SECURITY */}
           {activeTab === 'user_profile' && (
             <div className="flex flex-col gap-6">
-              <div className="border-b border-border pb-4">
-                <h2 className="text-lg font-bold text-foreground">Profile Settings</h2>
-                <p className="text-xs text-muted-foreground">Manage authorized email coordinates, credentials password and multi-factor safety tokens</p>
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-border pb-4">
+                <div>
+                  <h2 className="text-lg font-bold text-foreground">Profile Settings</h2>
+                  <p className="text-xs text-muted-foreground">Manage authorized email coordinates, credentials password and multi-factor safety tokens</p>
+                </div>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
