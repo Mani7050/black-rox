@@ -111,7 +111,7 @@ export default function AdminUsers({
             </tr>
           </thead>
           <tbody className="divide-y divide-border/60 text-xs">
-            {usersList.map(u => {
+            {usersList.filter(u => u.role !== 'admin').map(u => {
               const initials = u.name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
               let hash = 0;
               for (let i = 0; i < u.name.length; i++) hash = u.name.charCodeAt(i) + ((hash << 5) - hash);

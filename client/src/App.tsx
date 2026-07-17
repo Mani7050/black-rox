@@ -2667,9 +2667,11 @@ export function App() {
                 <div className="bg-card border border-border p-5 rounded-none flex justify-between items-center">
                   <div>
                     <span className="text-[10px] uppercase font-bold text-muted-foreground block">Total Accounts</span>
-                    <span className="text-3xl font-black text-foreground block mt-1">{usersList.length}</span>
+                    <span className="text-3xl font-black text-foreground block mt-1">
+                      {usersList.filter(u => u.role !== 'admin').length}
+                    </span>
                     <span className="text-[10px] text-emerald-500 font-semibold mt-2 block">
-                      {usersList.filter(u => u.status !== 'suspended').length} Active Users
+                      {usersList.filter(u => u.role !== 'admin' && u.status !== 'suspended').length} Active Users
                     </span>
                   </div>
                   <div className="ml-2 shrink-0">
@@ -2833,7 +2835,7 @@ export function App() {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-border/60 text-xs">
-                    {usersList.map(u => {
+                    {usersList.filter(u => u.role !== 'admin').map(u => {
                       const initials = u.name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
                       const avatarColors = [
                         'bg-rose-500/15 text-rose-600 dark:bg-rose-500/25 dark:text-rose-400',
