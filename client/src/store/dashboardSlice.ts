@@ -98,9 +98,13 @@ const dashboardSlice = createSlice({
       state.isDarkMode = action.payload;
       localStorage.setItem('isDarkMode_v2', String(action.payload));
     },
-    setConnectionState: (state, action: PayloadAction<{ connected: boolean; connecting: boolean }>) => {
-      state.isConnected = action.payload.connected;
-      state.isConnecting = action.payload.connecting;
+    setConnectionState: (state, action: PayloadAction<{ connected?: boolean; connecting?: boolean }>) => {
+      if (action.payload.connected !== undefined) {
+        state.isConnected = action.payload.connected;
+      }
+      if (action.payload.connecting !== undefined) {
+        state.isConnecting = action.payload.connecting;
+      }
     },
   },
 });

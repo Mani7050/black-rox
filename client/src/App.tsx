@@ -600,12 +600,12 @@ export function App() {
 
   const setIsConnected = (val: boolean | ((prev: boolean) => boolean)) => {
     const nextVal = typeof val === 'function' ? val(isConnected) : val;
-    dispatch(dashboardActions.setConnectionState({ connected: nextVal, connecting: isConnecting }));
+    dispatch(dashboardActions.setConnectionState({ connected: nextVal }));
   };
 
   const setIsConnecting = (val: boolean | ((prev: boolean) => boolean)) => {
     const nextVal = typeof val === 'function' ? val(isConnecting) : val;
-    dispatch(dashboardActions.setConnectionState({ connected: isConnected, connecting: nextVal }));
+    dispatch(dashboardActions.setConnectionState({ connecting: nextVal }));
   };
   
   // Toast notifications state
