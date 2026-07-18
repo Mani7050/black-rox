@@ -550,13 +550,7 @@ export function App() {
   const [authError, setAuthError] = useState('');
   const [authMode, setAuthMode] = useState<'login' | 'signup'>('login');
   const [authName, setAuthName] = useState('');
-  const [pnlHistory, setPnlHistory] = useState<{ time: string; pnl: number }[]>([
-    { time: '15:10', pnl: 1000 },
-    { time: '15:15', pnl: 1100 },
-    { time: '15:20', pnl: 950 },
-    { time: '15:25', pnl: 1200 },
-    { time: '15:30', pnl: 1150 }
-  ]);
+  const [pnlHistory, setPnlHistory] = useState<{ time: string; pnl: number }[]>([]);
 
   useEffect(() => {
     if (!isLoggedIn) {
@@ -657,13 +651,7 @@ export function App() {
   const [riskMaxTrades, setRiskMaxTrades] = useState('5');
   const [isUpdatingRiskSettings, setIsUpdatingRiskSettings] = useState(false);
 
-  // New Admin & User Dashboard tabs states
-  const [plans, setPlans] = useState<SubscriptionPlan[]>([
-    { id: 'plan_trial', name: '7-Day Trial', price: 0, durationDays: 7, maxLotLimit: 1, maxCapital: 10000, maxOpenPositions: 1, status: 'active' },
-    { id: 'plan_basic', name: 'Basic Plan', price: 1999, durationDays: 30, maxLotLimit: 2, maxCapital: 100000, maxOpenPositions: 2, status: 'active' },
-    { id: 'plan_pro', name: 'Pro Scalper', price: 4999, durationDays: 30, maxLotLimit: 10, maxCapital: 500000, maxOpenPositions: 5, status: 'active' },
-    { id: 'plan_vip', name: 'VIP Unlimited', price: 9999, durationDays: 90, maxLotLimit: 50, maxCapital: 2500000, maxOpenPositions: 15, status: 'active' }
-  ]);
+  const [plans, setPlans] = useState<SubscriptionPlan[]>([]);
   const [brokers, setBrokers] = useState<any[]>([]);
   const [paymentsList, setPaymentsList] = useState<PaymentRecord[]>([]);
   const [signalsList, setSignalsList] = useState<TradingSignal[]>([]);
@@ -768,14 +756,7 @@ export function App() {
       maxOpenTrades: parseInt(riskMaxTrades) || 5
     };
 
-    if (!isConnected) {
-      const updatedUser = { ...user!, riskSettings: body };
-      setUser(updatedUser);
-      localStorage.setItem('currentUser', JSON.stringify(updatedUser));
-      addToast('success', 'Risk Settings Updated (Offline)', 'Applied configuration to local sandbox.');
-      setIsUpdatingRiskSettings(false);
-      return;
-    }
+
 
     try {
       const response = await fetch(`${API_BASE_URL}/api/user/risk-settings`, {
@@ -808,14 +789,7 @@ export function App() {
   const handleUpdateLotMultiplier = async (val: number) => {
     if (isNaN(val) || val <= 0) return;
     
-    // Offline simulation fallback
-    if (!isConnected) {
-      const updatedUser = { ...user!, lotMultiplier: val };
-      setUser(updatedUser);
-      localStorage.setItem('currentUser', JSON.stringify(updatedUser));
-      addToast('success', 'Risk Settings Updated', `Lot size multiplier set to ${val}x (Offline Mode)`);
-      return;
-    }
+
 
     try {
       const response = await fetch(`${API_BASE_URL}/api/user/settings`, {
@@ -866,19 +840,7 @@ export function App() {
       billingCycle: newPlanBillingCycle === 'Custom' ? `${newPlanDuration} Days` : newPlanBillingCycle
     };
 
-    if (!isConnected) {
-      const mockPlan: SubscriptionPlan = {
-        id: 'plan_' + Date.now(),
-        ...body,
-        status: 'active'
-      };
-      setPlans(prev => [...prev, mockPlan]);
-      setShowAddPlanModal(false);
-      setNewPlanName('');
-      setNewPlanPrice('');
-      addToast('success', 'Plan Created (Offline)', `Mock plan ${newPlanName} created.`);
-      return;
-    }
+
 
     try {
       const response = await fetch(`${API_BASE_URL}/api/admin/subscription-plans`, {
@@ -904,11 +866,7 @@ export function App() {
   };
 
   const handleDeletePlan = async (id: string) => {
-    if (!isConnected) {
-      setPlans(prev => prev.filter(p => p.id !== id));
-      addToast('warning', 'Plan Deleted (Offline)', 'Removed locally.');
-      return;
-    }
+
 
     try {
       const response = await fetch(`${API_BASE_URL}/api/admin/subscription-plans/delete`, {
@@ -968,12 +926,7 @@ export function App() {
       billingCycle: editPlanBillingCycle === 'Custom' ? `${editPlanDuration} Days` : editPlanBillingCycle
     };
 
-    if (!isConnected) {
-      setPlans(prev => prev.map(p => p.id === selectedPlanForEdit.id ? { ...p, ...body } : p));
-      setShowEditPlanModal(false);
-      addToast('success', 'Plan Updated (Offline)', `Plan ${editPlanName} updated locally.`);
-      return;
-    }
+
 
     try {
       const response = await fetch(`${API_BASE_URL}/api/admin/subscription-plans/update`, {
@@ -998,11 +951,7 @@ export function App() {
   };
 
   const handleToggleBroker = async (id: string) => {
-    if (!isConnected) {
-      setBrokers(prev => prev.map(b => b.id === id ? { ...b, enabled: !b.enabled, status: !b.enabled ? 'active' : 'inactive' } : b));
-      addToast('info', 'Broker Toggled (Offline)', 'Toggled state locally.');
-      return;
-    }
+
 
     try {
       const response = await fetch(`${API_BASE_URL}/api/admin/brokers/toggle`, {
@@ -1030,12 +979,7 @@ export function App() {
       return;
     }
 
-    if (!isConnected) {
-      setBrokers(prev => prev.map(b => b.id === editBrokerId ? { ...b, name: editBrokerName } : b));
-      setShowEditBrokerModal(false);
-      addToast('success', 'Broker Updated (Offline)', 'Updated locally.');
-      return;
-    }
+
 
     try {
       const response = await fetch(`${API_BASE_URL}/api/admin/brokers/update`, {
@@ -1061,12 +1005,7 @@ export function App() {
   };
 
   const handleDeleteBroker = async (id: string) => {
-    if (!isConnected) {
-      setBrokers(prev => prev.filter(b => b.id !== id));
-      setShowDeleteBrokerModal(false);
-      addToast('success', 'Broker Deleted (Offline)', 'Removed template locally.');
-      return;
-    }
+
 
     try {
       const response = await fetch(`${API_BASE_URL}/api/admin/brokers/delete`, {
@@ -1092,12 +1031,7 @@ export function App() {
   };
 
   const handleDeleteSignal = async (id: string) => {
-    if (!isConnected) {
-      setSignalsList(prev => prev.filter(s => s.id !== id));
-      setShowDeleteSignalModal(false);
-      addToast('success', 'Signal Deleted (Offline)', 'Removed signal locally.');
-      return;
-    }
+
 
     try {
       const response = await fetch(`${API_BASE_URL}/api/admin/signals/delete`, {
@@ -1132,20 +1066,7 @@ export function App() {
       price: parseFloat(sigPrice)
     };
 
-    if (!isConnected) {
-      const mockSig: TradingSignal = {
-        id: 'SIG' + Date.now(),
-        instrument: sigInstrument,
-        type: sigType,
-        price: parseFloat(sigPrice),
-        time: new Date().toISOString(),
-        status: 'executed'
-      };
-      setSignalsList(prev => [mockSig, ...prev]);
-      setShowBroadcastSignalModal(false);
-      addToast('success', 'Signal Broadcasted (Offline)', `Mock ${sigType} signal sent.`);
-      return;
-    }
+
 
     try {
       const response = await fetch(`${API_BASE_URL}/api/admin/signals`, {
@@ -1169,10 +1090,7 @@ export function App() {
   };
 
   const handleEmergencySquareOff = async () => {
-    if (!isConnected) {
-      addToast('error', 'Emergency Square-Off', 'Initiated offline emergency square off.');
-      return;
-    }
+
 
     try {
       const response = await fetch(`${API_BASE_URL}/api/admin/square-off`, {
@@ -1195,10 +1113,7 @@ export function App() {
   };
 
   const handleResetUserApi = async (userId: string) => {
-    if (!isConnected) {
-      addToast('warning', 'API Reset (Offline)', `Removed API parameters locally for User: ${userId}`);
-      return;
-    }
+
     try {
       const response = await fetch(`${API_BASE_URL}/api/admin/users/reset-api`, {
         method: 'POST',
@@ -1223,11 +1138,7 @@ export function App() {
     e.preventDefault();
     if (!selectedUserForPlan || !assignedPlanId) return;
     const plan = plans.find(p => p.id === assignedPlanId);
-    if (!isConnected) {
-      addToast('success', 'Plan Assigned (Offline)', `Assigned plan ${plan?.name || assignedPlanId} to user ${selectedUserForPlan.name}`);
-      setShowAssignPlanModal(false);
-      return;
-    }
+
     try {
       const response = await fetch(`${API_BASE_URL}/api/admin/users/assign-plan`, {
         method: 'POST',
@@ -1251,33 +1162,58 @@ export function App() {
     }
   };
   
-  const handleConnectDemat = (e: React.FormEvent) => {
+  const handleConnectDemat = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!brokerUserId || !brokerKey) return;
-    const mockCred: Credential = {
-      id: Date.now().toString(),
+    const body = {
       broker: brokerSelect === 'zerodha' ? 'Zerodha Kite' : brokerSelect === 'angelone' ? 'Angel One' : brokerSelect === 'upstox' ? 'Upstox' : 'Dhan',
       name: `${user?.name || 'User'}'s Demat`,
       apiKey: brokerKey,
+      apiSecret: brokerSecret,
       userId: brokerUserId,
-      status: 'connected',
-      lastConnected: new Date().toISOString(),
-      funds: 125000,
-      margin: 45000,
-      holdings: 85000,
-      accessToken: 'token_' + Math.random().toString(36).slice(2)
+      totpSecret: brokerTotp
     };
-    setCredentials(prev => [...prev, mockCred]);
-    addToast('success', 'Broker Session Authenticated', `Successfully linked broker ${mockCred.broker}`);
-    setBrokerKey('');
-    setBrokerSecret('');
-    setBrokerUserId('');
-    setBrokerTotp('');
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/credentials`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${authToken}`
+        },
+        body: JSON.stringify(body)
+      });
+      if (response.ok) {
+        addToast('success', 'Broker Session Authenticated', `Successfully linked broker ${body.broker}`);
+        setBrokerKey('');
+        setBrokerSecret('');
+        setBrokerUserId('');
+        setBrokerTotp('');
+      } else {
+        const err = await response.json();
+        addToast('error', 'Authentication Failed', err.error || 'Server error.');
+      }
+    } catch (error) {
+      addToast('error', 'Connection Error', 'Could not reach server to connect broker.');
+    }
   };
   
-  const handleDisconnectBroker = (id: string) => {
-    setCredentials(prev => prev.filter(c => c.id !== id));
-    addToast('warning', 'Broker Disconnected', 'Demat API link severed successfully');
+  const handleDisconnectBroker = async (id: string) => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/credentials/${id}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${authToken}`
+        }
+      });
+      if (response.ok) {
+        addToast('warning', 'Broker Disconnected', 'Demat API link severed successfully');
+      } else {
+        const err = await response.json();
+        addToast('error', 'Disconnection Failed', err.error || 'Server error.');
+      }
+    } catch (error) {
+      addToast('error', 'Connection Error', 'Could not reach server to disconnect broker.');
+    }
   };
 
   const fetchUsers = async () => {
@@ -1289,22 +1225,21 @@ export function App() {
         const data = await response.json();
         setUsersList(data);
         return;
+      } else {
+        const err = await response.json();
+        addToast('error', 'Fetch Failed', err.error || 'Could not fetch users list.');
       }
     } catch (e) {
       console.error('Failed to fetch users from server:', e);
+      addToast('error', 'Connection Error', 'Could not reach server to fetch users.');
     }
-    // Fallback: if server unreachable, show mock data
-    setUsersList([
-      { id: 'u1', name: 'Terminal Admin', email: 'admin@back.com', role: 'admin', lotMultiplier: 1.0, createdAt: new Date(Date.now() - 86400000 * 5).toISOString(), lastLogin: new Date().toISOString() },
-      { id: 'u2', name: 'Mani Sharma', email: 'user@back.com', role: 'user', lotMultiplier: 1.0, createdAt: new Date(Date.now() - 86400000 * 2).toISOString(), lastLogin: new Date(Date.now() - 3600000).toISOString() }
-    ]);
   };
 
   useEffect(() => {
-    if (isLoggedIn && activeTab === 'admin_users') {
+    if (isLoggedIn && activeTab === 'admin_users' && isConnected) {
       fetchUsers();
     }
-  }, [isLoggedIn, activeTab]);
+  }, [isLoggedIn, activeTab, isConnected]);
 
   const handleCreateUser = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -1337,21 +1272,8 @@ export function App() {
         addToast('error', 'Creation Failed', err.error || 'Server error occurred.');
       }
     } catch (e) {
-      // Fallback: server unreachable, create locally
-      const mockNewUser: User = {
-        id: 'u' + Date.now(),
-        name: newUserName,
-        email: newUserEmail,
-        role: newUserRole,
-        lotMultiplier: 1.0,
-        createdAt: new Date().toISOString()
-      };
-      setUsersList(prev => [...prev, mockNewUser]);
-      setShowAddUserModal(false);
-      setNewUserName('');
-      setNewUserEmail('');
-      setNewUserPassword('');
-      addToast('warning', 'User Created (Offline)', `Account for ${newUserName} saved locally only.`);
+      console.error(e);
+      addToast('error', 'Connection Error', 'Could not reach server to create user.');
     }
   };
 
@@ -1375,14 +1297,8 @@ export function App() {
         fetchUsers();
       }
     } catch (e) {
-      setUsersList(prev =>
-        prev.map(u =>
-          u.id === userId
-            ? { ...u, status: u.status === 'suspended' ? 'active' : 'suspended' }
-            : u
-        )
-      );
-      addToast('warning', 'Account Modified (Offline)', 'Toggled user authorization status locally.');
+      console.error(e);
+      addToast('error', 'Connection Error', 'Could not reach server to toggle status.');
     }
   };
 
@@ -1415,16 +1331,8 @@ export function App() {
         addToast('error', 'Update Failed', err.error || 'Server error occurred.');
       }
     } catch (e) {
-      // Fallback: update locally
-      setUsersList(prev =>
-        prev.map(u =>
-          u.id === selectedUserForEdit.id
-            ? { ...u, name: editUserName, email: editUserEmail, role: editUserRole, lotMultiplier: parseFloat(editUserMultiplier) || 1.0 }
-            : u
-        )
-      );
-      setShowEditUserModal(false);
-      addToast('warning', 'User Updated (Offline)', `Profile updates saved locally only.`);
+      console.error(e);
+      addToast('error', 'Connection Error', 'Could not reach server to update user details.');
     }
   };
 
@@ -1453,10 +1361,8 @@ export function App() {
         addToast('error', 'Deletion Failed', err.error || 'Server error occurred.');
       }
     } catch (e) {
-      // Fallback: delete locally
-      setUsersList(prev => prev.filter(u => u.id !== userId));
-      setShowDeleteUserModal(false);
-      addToast('warning', 'User Deleted (Offline)', 'Removed user profile record locally.');
+      console.error(e);
+      addToast('error', 'Connection Error', 'Could not reach server to delete user.');
     }
   };
 
@@ -1706,33 +1612,8 @@ export function App() {
       }
     } catch (err: any) {
       console.error(err);
-      // Local fallback simulation if server is offline
-      if (authEmail === 'admin@back.com' && authPassword === 'Test@123') {
-        const fallbackUser: User = {
-          id: 'u1',
-          name: 'Terminal Admin',
-          email: 'admin@back.com',
-          role: 'admin',
-          lotMultiplier: 1.0
-        };
-        const fallbackToken = 'blackrox_jwt_mock_token_admin@back.com';
-        dispatch(dashboardActions.setAuth({ token: fallbackToken, user: fallbackUser }));
-        addToast('success', 'Logged In (Offline Mode)', 'Authenticated successfully via local credentials.');
-      } else if (authEmail === 'user@back.com' && authPassword === 'Test@123') {
-        const fallbackUser: User = {
-          id: 'u2',
-          name: 'Mani Sharma',
-          email: 'user@back.com',
-          role: 'user',
-          lotMultiplier: 1.0
-        };
-        const fallbackToken = 'blackrox_jwt_mock_token_user@back.com';
-        dispatch(dashboardActions.setAuth({ token: fallbackToken, user: fallbackUser }));
-        addToast('success', 'Logged In (Offline Mode)', 'Authenticated successfully via local credentials.');
-      } else {
-        setAuthError(err.message || 'Invalid email or password');
-        addToast('error', 'Auth Failed', err.message || 'Invalid credentials');
-      }
+      setAuthError(err.message || 'Invalid email or password');
+      addToast('error', 'Auth Failed', err.message || 'Invalid credentials');
     } finally {
       setIsAuthLoading(false);
     }
@@ -1763,23 +1644,8 @@ export function App() {
       }
     } catch (err: any) {
       console.error(err);
-      // Local fallback simulation if server is offline
-      if (!isConnected) {
-        const mockUser: User = {
-          id: 'u' + Date.now(),
-          name: authName,
-          email: authEmail,
-          role: 'user',
-          lotMultiplier: 1.0,
-          planId: 'plan_trial'
-        };
-        const mockToken = 'blackrox_jwt_mock_token_' + authEmail;
-        dispatch(dashboardActions.setAuth({ token: mockToken, user: mockUser }));
-        addToast('success', 'Trial Account Created (Offline Mode)', 'Authenticated successfully via local mock.');
-      } else {
-        setAuthError(err.message || 'Registration failed');
-        addToast('error', 'Registration Failed', err.message || 'Could not complete registration');
-      }
+      setAuthError(err.message || 'Registration failed');
+      addToast('error', 'Registration Failed', err.message || 'Could not complete registration');
     } finally {
       setIsAuthLoading(false);
     }
@@ -1811,19 +1677,6 @@ export function App() {
       if (!response.ok) throw new Error('Failed to toggle strategy');
     } catch (error) {
       addToast('error', 'Action Failed', 'Failed to toggle strategy. Backend might be unreachable.');
-      // Local fallback simulation if server is disconnected
-      if (!isConnected) {
-        setStrategies(prev =>
-          prev.map(s => {
-            if (s.id === id) {
-              const nextStatus = s.status === 'active' ? 'inactive' : 'active';
-              addToast(nextStatus === 'active' ? 'success' : 'warning', 'Mock strategy status updated', `${s.name} is now ${nextStatus}`);
-              return { ...s, status: nextStatus };
-            }
-            return s;
-          })
-        );
-      }
     }
   };
 
@@ -1883,28 +1736,6 @@ export function App() {
       setNewCred({ broker: 'Zerodha Kite', name: '', apiKey: '', apiSecret: '', userId: '', totpSecret: '' });
     } catch (error) {
       addToast('error', 'Connection Error', 'Could not save credentials to backend server.');
-      // Local fallback simulation if server is disconnected
-      if (!isConnected) {
-        const mockNew: Credential = {
-          id: Date.now().toString(),
-          broker: newCred.broker,
-          name: newCred.name,
-          apiKey: newCred.apiKey.slice(0, 5) + '...' + newCred.apiKey.slice(-3),
-          userId: newCred.userId,
-          status: 'connected',
-          lastConnected: new Date().toISOString(),
-          funds: parseFloat((50000 + Math.random() * 150000).toFixed(2)),
-          margin: parseFloat((10000 + Math.random() * 30000).toFixed(2)),
-          holdings: parseFloat((80000 + Math.random() * 500000).toFixed(2)),
-          clientName: 'Mani Sharma',
-          totpSecret: newCred.totpSecret || 'JBSWY3DPEHPK3PXP',
-          accessToken: newCred.broker.toLowerCase().replace(' ', '') + '_acc_' + Math.random().toString(36).substring(2, 10)
-        };
-        setCredentials(prev => [...prev, mockNew]);
-        setShowAddCredModal(false);
-        setNewCred({ broker: 'Zerodha Kite', name: '', apiKey: '', apiSecret: '', userId: '', totpSecret: '' });
-        addToast('success', 'Mock API Saved', 'Running in offline simulation mode.');
-      }
     }
   };
 
@@ -1920,11 +1751,6 @@ export function App() {
       if (!response.ok) throw new Error('Failed to delete credentials');
     } catch (error) {
       addToast('error', 'Action Failed', 'Failed to delete credentials.');
-      // Local fallback
-      if (!isConnected) {
-        setCredentials(prev => prev.filter(c => c.id !== id));
-        addToast('warning', 'Mock API Deleted', 'Removed in offline mode.');
-      }
     }
   };
 

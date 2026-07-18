@@ -20,17 +20,6 @@ const defaultData = {
       status: 'active',
       createdAt: new Date(Date.now() - 86400000 * 5).toISOString(),
       riskSettings: { ...defaultRiskSettings }
-    },
-    {
-      id: 'u2',
-      email: 'user@back.com',
-      password: 'Test@123',
-      name: 'Mani Sharma',
-      role: 'user',
-      status: 'active',
-      createdAt: new Date(Date.now() - 86400000 * 2).toISOString(),
-      lotMultiplier: 1.0,
-      riskSettings: { ...defaultRiskSettings }
     }
   ],
   credentials: [],
@@ -55,17 +44,9 @@ const defaultData = {
     { id: 'upstox', name: 'Upstox', enabled: true, status: 'active' },
     { id: 'dhan', name: 'Dhan', enabled: false, status: 'inactive' }
   ],
-  payments: [
-    { id: 'PAY101', userEmail: 'user@back.com', planName: 'Pro Scalper', amount: 4999, status: 'success', date: new Date(Date.now() - 86400000 * 3).toISOString() },
-    { id: 'PAY102', userEmail: 'admin@back.com', planName: 'VIP Unlimited', amount: 9999, status: 'success', date: new Date(Date.now() - 86400000 * 5).toISOString() }
-  ],
-  signals: [
-    { id: 'SIG101', instrument: 'NIFTY 50', type: 'BUY', price: 24350.25, time: new Date().toISOString(), status: 'executed' }
-  ],
-  auditLogs: [
-    { timestamp: new Date(Date.now() - 60000 * 5).toISOString(), type: 'auth', source: 'admin@back.com', message: 'Admin login from IP 192.168.1.1' },
-    { timestamp: new Date(Date.now() - 60000 * 10).toISOString(), type: 'system', source: 'System', message: 'Weekly reports compiled successfully' }
-  ]
+  payments: [],
+  signals: [],
+  auditLogs: []
 };
 
 // In-memory data store cache (accessed by other controllers)
