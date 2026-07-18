@@ -24,7 +24,7 @@ function authenticateToken(req, res, next) {
 
   try {
     const decoded = jwt.verify(token, JWT_SECRET);
-    const user = data.users.find(u => u.id === decoded.id);
+    const user = data.users.find(u => u.id === decoded.id || (decoded.email && u.email.toLowerCase() === decoded.email.toLowerCase()));
     if (!user || user.status !== 'active') {
       return res.status(403).json({ error: 'Access denied. Invalid account status.' });
     }
