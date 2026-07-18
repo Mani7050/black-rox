@@ -77,7 +77,7 @@ collections.forEach(col => {
 
 // Load DB from MongoDB on startup
 async function loadDB() {
-  const mongoURI = process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/blackrox';
+  const mongoURI = process.env.MONGO_URI || process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/blackrox';
   console.log(`📡 Connecting to MongoDB at ${mongoURI}...`);
 
   try {
