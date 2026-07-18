@@ -29,6 +29,14 @@ async function startServer() {
   const userRoutes = require('./routes/userRoutes');
   const adminRoutes = require('./routes/adminRoutes');
 
+  const mongoose = require('mongoose');
+  app.get('/api/db-status', (req, res) => {
+    res.json({
+      connected: mongoose.connection.readyState === 1,
+      readyState: mongoose.connection.readyState
+    });
+  });
+
   app.use('/api/auth', authRoutes);
   app.use('/api/user', userRoutes);
   app.use('/api', userRoutes);          // /api/credentials, /api/strategies
