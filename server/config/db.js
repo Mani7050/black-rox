@@ -81,8 +81,15 @@ async function loadDB() {
       console.log('✓ Connected to MongoDB');
     }
 
-    // Clear mock strategy data from MongoDB and memory
-    await models['strategies'].deleteMany({});
+
+
+    // Wipe all legacy mock strategies by ID and Asset Name from MongoDB Atlas
+    await models['strategies'].deleteMany({ 
+      $or: [
+        { id: { $in: ['strat_nifty', 'strat_bankex', 'strat_crude'] } },
+        { asset: { $in: ['FIFTYNIFTY', 'BANKEX', 'CRUDEOIL'] } }
+      ]
+    });
 
     for (const col of collections) {
       const docs = await models[col].find({}).lean();
