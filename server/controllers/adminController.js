@@ -1,9 +1,20 @@
-const { data, saveDB, defaultRiskSettings } = require('../config/db');
+const { data, saveDB, defaultRiskSettings, models } = require('../config/db');
 const { broadcast, calculateOverallPnl, addLog } = require('../services/websocket');
 const bcrypt = require('bcryptjs');
 
 // GET /api/admin/users
-exports.getUsers = (req, res) => {
+exports.getUsers = async (req, res) => {
+  try {
+    if (models['users']) {
+      const docs = await models['users'].find({}).lean();
+      if (docs && docs.length > 0) {
+        data.users = docs.map(doc => ({ ...doc, id: doc.id || doc._id.toString() }));
+      }
+    }
+  } catch (e) {
+    console.error('Failed to sync users from DB:', e);
+  }
+
   res.json(data.users.map(u => ({
     id: u.id, name: u.name, email: u.email, role: u.role,
     status: u.status, createdAt: u.createdAt, lastLogin: u.lastLogin,
