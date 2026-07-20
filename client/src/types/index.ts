@@ -17,13 +17,20 @@ export interface Credential {
 export interface Strategy {
   id: string;
   name: string;
+  asset?: string;
+  assetType?: 'INDEX' | 'COMMODITY' | 'STOCK' | string;
+  strategyCode?: string;
   instrument: string;
   type: string;
+  quantity?: number;
+  limit?: number;
+  description?: string;
   status: 'active' | 'inactive';
   capital: number;
   pnl: number;
   tradesCount: number;
-  settings: Record<string, any>;
+  availableOptions?: string[];
+  settings?: Record<string, any>;
 }
 
 export interface Trade {

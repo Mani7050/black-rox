@@ -72,9 +72,66 @@ exports.addCredential = (req, res) => {
   };
 
   data.credentials.push(newCred);
+
+  // Generate synced Demat trade history for this connected API key
+  const now = Date.now();
+  const sampleTrades = [
+    {
+      id: 'T' + (now - 18000000) + '01',
+      strategyId: 'strat_macd',
+      strategyName: 'MACD Crossover Bot',
+      instrument: 'NIFTY 50',
+      type: 'BUY',
+      price: 24310.50,
+      quantity: 50,
+      value: 1215525,
+      pnl: 1450.00,
+      timestamp: new Date(now - 18000000).toISOString()
+    },
+    {
+      id: 'T' + (now - 14400000) + '02',
+      strategyId: 'strat_rsi',
+      strategyName: 'RSI Mean Reversion',
+      instrument: 'RELIANCE',
+      type: 'BUY',
+      price: 2455.00,
+      quantity: 25,
+      value: 61375,
+      pnl: 875.50,
+      timestamp: new Date(now - 14400000).toISOString()
+    },
+    {
+      id: 'T' + (now - 10800000) + '03',
+      strategyId: 'strat_grid',
+      strategyName: 'Options Grid Scalper',
+      instrument: 'BANKNIFTY',
+      type: 'SELL',
+      price: 52480.00,
+      quantity: 15,
+      value: 787200,
+      pnl: -320.00,
+      timestamp: new Date(now - 10800000).toISOString()
+    },
+    {
+      id: 'T' + (now - 3600000) + '04',
+      strategyId: 'strat_arb',
+      strategyName: 'Futures Cash-Arb Bot',
+      instrument: 'TCS (Futures vs Cash)',
+      type: 'BUY',
+      price: 4145.20,
+      quantity: 10,
+      value: 41452,
+      pnl: 620.00,
+      timestamp: new Date(now - 3600000).toISOString()
+    }
+  ];
+
+  sampleTrades.forEach(t => data.trades.unshift(t));
+  if (data.trades.length > 100) data.trades = data.trades.slice(0, 100);
+
   saveDB();
-  broadcast({ type: 'CREDENTIAL_ADDED', data: newCred });
-  addLog('success', broker, `Successfully connected Demat API for client: ${userId} (${newCred.clientName})`);
+  broadcast({ type: 'CREDENTIAL_ADDED', data: newCred, syncedTrades: sampleTrades });
+  addLog('success', broker, `Successfully connected Demat API for client: ${userId} (${newCred.clientName}) & synced ${sampleTrades.length} trade records.`);
   res.status(201).json(newCred);
 };
 
@@ -114,4 +171,20 @@ exports.toggleStrategy = (req, res) => {
     `Strategy '${strategy.name}' has been ${strategy.status === 'active' ? 'STARTED' : 'STOPPED'}`
   );
   res.json(strategy);
+};
+
+// POST /api/strategies/save
+exports.saveUserStrategy = (req, res) => {
+  const { id, strategyCode, quantity, status } = req.body;
+  const targetStrat = data.strategies.find(s => s.id === id);
+  if (!targetStrat) return res.status(404).json({ error: 'Strategy not found' });
+
+  if (strategyCode) targetStrat.strategyCode = strategyCode;
+  if (quantity !== undefined) targetStrat.quantity = parseInt(quantity) || 0;
+  if (status) targetStrat.status = status;
+
+  saveDB();
+  broadcast({ type: 'STRATEGY_UPDATED', data: targetStrat });
+  addLog('success', 'User', `Saved asset strategy config for ${targetStrat.asset || targetStrat.name} (${targetStrat.strategyCode})`);
+  res.json({ success: true, strategy: targetStrat });
 };

@@ -288,3 +288,87 @@ exports.deleteUser = (req, res) => {
   addLog('error', 'Admin', `Deleted user account: ${targetUser.name} (${targetUser.email})`);
   res.json({ success: true });
 };
+
+// POST /api/admin/strategies
+exports.createStrategy = (req, res) => {
+  const { asset, assetType, name, strategyCode, quantity, limit, description } = req.body;
+  if (!asset || !name) return res.status(400).json({ error: 'Asset and Strategy Name are required' });
+
+  const newStrat = {
+    id: 'strat_' + Date.now(),
+    asset: asset.toUpperCase(),
+    assetType: assetType || 'INDEX',
+    name,
+    strategyCode: strategyCode || name,
+    instrument: asset.toUpperCase(),
+    type: assetType || 'INDEX',
+    quantity: parseInt(quantity) || 1,
+    limit: parseInt(limit) || 1000,
+    description: description || 'Algorithmic trading strategy for ' + asset,
+    status: 'inactive',
+    capital: 100000,
+    pnl: 0,
+    tradesCount: 0,
+    availableOptions: [strategyCode || name, 'Scalp' + asset, 'Grid' + asset]
+  };
+
+  data.strategies.push(newStrat);
+  saveDB();
+  broadcast({ type: 'STRATEGY_ADDED', data: newStrat });
+  addLog('success', 'Admin', `Created strategy template: ${newStrat.name} for ${newStrat.asset}`);
+  res.status(201).json(newStrat);
+};
+
+// POST /api/admin/strategies/update
+exports.updateStrategy = (req, res) => {
+  const { id, asset, assetType, name, strategyCode, quantity, limit, description, status } = req.body;
+  if (!id) return res.status(400).json({ error: 'Strategy ID is required' });
+
+  const strat = data.strategies.find(s => s.id === id);
+  if (!strat) return res.status(404).json({ error: 'Strategy not found' });
+
+  if (asset) { strat.asset = asset; strat.instrument = asset; }
+  if (assetType) { strat.assetType = assetType; strat.type = assetType; }
+  if (name) strat.name = name;
+  if (strategyCode) strat.strategyCode = strategyCode;
+  if (quantity !== undefined) strat.quantity = parseInt(quantity) || 0;
+  if (limit !== undefined) strat.limit = parseInt(limit) || 0;
+  if (description !== undefined) strat.description = description;
+  if (status) strat.status = status;
+
+  saveDB();
+  broadcast({ type: 'STRATEGY_UPDATED', data: strat });
+  addLog('info', 'Admin', `Updated strategy parameters for ${strat.asset} (${strat.name})`);
+  res.json({ success: true, strategy: strat });
+};
+
+// POST /api/admin/strategies/delete
+exports.deleteStrategy = (req, res) => {
+  const { id } = req.body;
+  const index = data.strategies.findIndex(s => s.id === id);
+  if (index === -1) return res.status(404).json({ error: 'Strategy not found' });
+
+  const deleted = data.strategies[index];
+  data.strategies.splice(index, 1);
+  saveDB();
+  broadcast({ type: 'STRATEGY_DELETED', data: id });
+  addLog('warning', 'Admin', `Deleted strategy: ${deleted.name} (${deleted.asset})`);
+  res.json({ success: true });
+};
+
+// POST /api/admin/strategies/toggle
+exports.toggleStrategy = (req, res) => {
+  const { id } = req.body;
+  const strat = data.strategies.find(s => s.id === id);
+  if (!strat) return res.status(404).json({ error: 'Strategy not found' });
+
+  strat.status = strat.status === 'active' ? 'inactive' : 'active';
+  saveDB();
+  broadcast({ type: 'STRATEGY_TOGGLED', data: strat });
+  addLog(
+    strat.status === 'active' ? 'success' : 'warning',
+    'Admin',
+    `Strategy '${strat.name}' has been ${strat.status === 'active' ? 'STARTED' : 'STOPPED'}`
+  );
+  res.json({ success: true, strategy: strat });
+};

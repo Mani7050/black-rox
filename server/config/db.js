@@ -23,12 +23,7 @@ const defaultData = {
     }
   ],
   credentials: [],
-  strategies: [
-    { id: 'strat_macd', name: 'MACD Crossover Bot', instrument: 'NIFTY 50', type: 'Momentum', status: 'inactive', capital: 50000, pnl: 0, tradesCount: 0, settings: { shortPeriod: 12, longPeriod: 26, signalPeriod: 9 } },
-    { id: 'strat_rsi', name: 'RSI Mean Reversion', instrument: 'RELIANCE', type: 'Mean Reversion', status: 'inactive', capital: 100000, pnl: 0, tradesCount: 0, settings: { rsiOversold: 30, rsiOverbought: 70, period: 14 } },
-    { id: 'strat_grid', name: 'Options Grid Scalper', instrument: 'BANKNIFTY', type: 'Grid Scalping', status: 'inactive', capital: 75000, pnl: 0, tradesCount: 0, settings: { gridLevels: 8, upperRange: 53000, lowerRange: 52000 } },
-    { id: 'strat_arb', name: 'Futures Cash-Arb Bot', instrument: 'TCS (Futures vs Cash)', type: 'Arbitrage', status: 'inactive', capital: 150000, pnl: 0, tradesCount: 0, settings: { minSpreadPct: 0.35 } }
-  ],
+  strategies: [],
   trades: [],
   logs: [],
   openPositions: [],
@@ -86,6 +81,9 @@ async function loadDB() {
       console.log('✓ Connected to MongoDB');
     }
 
+    // Clear mock strategy data from MongoDB and memory
+    await models['strategies'].deleteMany({});
+
     for (const col of collections) {
       const docs = await models[col].find({}).lean();
       if (docs && docs.length > 0) {
@@ -96,6 +94,8 @@ async function loadDB() {
           }
           return cleanDoc;
         });
+
+
       } else {
         // If collection is empty, seed it
         if (defaultData[col] && defaultData[col].length > 0) {

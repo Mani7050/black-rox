@@ -54,6 +54,8 @@ import {
   List,
   Menu
 } from 'lucide-react';
+import UserStrategies from './pages/user/UserStrategies';
+import AdminTrading from './pages/admin/AdminTrading';
 
 // Interfaces for our state
 interface Credential {
@@ -75,13 +77,20 @@ interface Credential {
 interface Strategy {
   id: string;
   name: string;
+  asset?: string;
+  assetType?: 'INDEX' | 'COMMODITY' | 'STOCK' | string;
+  strategyCode?: string;
   instrument: string;
   type: string;
+  quantity?: number;
+  limit?: number;
+  description?: string;
   status: 'active' | 'inactive';
   capital: number;
   pnl: number;
   tradesCount: number;
-  settings: Record<string, any>;
+  availableOptions?: string[];
+  settings?: Record<string, any>;
 }
 
 interface Trade {
@@ -449,6 +458,7 @@ const TAB_TO_URL: Record<string, string> = {
   admin_settings:      '/admin/settings',
   admin_audit:         '/admin/audit',
   user_dashboard:         '/user/dashboard',
+  user_strategies:        '/user/strategies',
   user_broker:            '/user/broker',
   user_subscription:      '/user/subscription',
   user_trading_settings:  '/user/trading-settings',
@@ -1466,9 +1476,26 @@ export function App() {
             );
             break;
 
+          case 'STRATEGY_ADDED':
+            setStrategies(prev => [...prev, data]);
+            addToast('success', 'Strategy Added', `New strategy '${data.name}' for ${data.asset || data.instrument} created`);
+            break;
+
+          case 'STRATEGY_UPDATED':
+            setStrategies(prev => prev.map(s => s.id === data.id ? { ...s, ...data } : s));
+            break;
+
+          case 'STRATEGY_DELETED':
+            setStrategies(prev => prev.filter(s => s.id !== data));
+            addToast('warning', 'Strategy Removed', 'Strategy removed from system catalog.');
+            break;
+
           case 'CREDENTIAL_ADDED':
             setCredentials(prev => [...prev, data]);
-            addToast('success', 'API Connected', `Connected to ${data.broker} successfully`);
+            if (payload.syncedTrades && Array.isArray(payload.syncedTrades)) {
+              setTrades(prev => [...payload.syncedTrades, ...prev].slice(0, 100));
+            }
+            addToast('success', 'API Connected', `Connected to ${data.broker} successfully. Demat orders synced!`);
             break;
 
           case 'CREDENTIAL_DELETED':
@@ -1677,6 +1704,75 @@ export function App() {
       if (!response.ok) throw new Error('Failed to toggle strategy');
     } catch (error) {
       addToast('error', 'Action Failed', 'Failed to toggle strategy. Backend might be unreachable.');
+    }
+  };
+
+  // API Call: Save User Strategy Configuration
+  const handleSaveStrategy = async (id: string, strategyCode: string, quantity: number, status: 'active' | 'inactive') => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/strategies/save`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${authToken}`
+        },
+        body: JSON.stringify({ id, strategyCode, quantity, status })
+      });
+      if (response.ok) {
+        setStrategies(prev => prev.map(s => s.id === id ? { ...s, strategyCode, quantity, status } : s));
+      } else {
+        const err = await response.json();
+        addToast('error', 'Save Failed', err.error || 'Could not save strategy parameters.');
+      }
+    } catch (e) {
+      addToast('error', 'Connection Error', 'Could not reach server to save strategy.');
+    }
+  };
+
+  // API Call: Admin Create Strategy Template
+  const handleCreateStrategyAdmin = async (data: { asset: string; assetType: string; name: string; strategyCode: string; quantity: number; limit: number; description: string }) => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/admin/strategies`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${authToken}`
+        },
+        body: JSON.stringify(data)
+      });
+      if (response.ok) {
+        const newStrat = await response.json();
+        setStrategies(prev => [...prev, newStrat]);
+        addToast('success', 'Strategy Created', `Created ${newStrat.asset} - ${newStrat.name}`);
+      } else {
+        const err = await response.json();
+        addToast('error', 'Creation Failed', err.error || 'Could not create strategy.');
+      }
+    } catch (e) {
+      addToast('error', 'Connection Error', 'Could not reach server to create strategy.');
+    }
+  };
+
+  // API Call: Admin Delete Strategy Template
+  const handleDeleteStrategyAdmin = async (id: string) => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/admin/strategies/delete`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${authToken}`
+        },
+        body: JSON.stringify({ id })
+      });
+      if (response.ok) {
+        setStrategies(prev => prev.filter(s => s.id !== id));
+        addToast('warning', 'Strategy Deleted', 'Strategy removed from catalog.');
+      } else {
+        const err = await response.json();
+        addToast('error', 'Deletion Failed', err.error || 'Could not delete strategy.');
+      }
+    } catch (e) {
+      addToast('error', 'Connection Error', 'Could not reach server to delete strategy.');
     }
   };
 
@@ -2086,6 +2182,7 @@ export function App() {
           ) : (
             [
               { id: 'user_dashboard', label: 'Dashboard Terminal', icon: LayoutDashboard },
+              { id: 'user_strategies', label: 'Assets & Strategies', icon: Layers },
               { id: 'user_broker', label: 'Broker Connection', icon: KeyRound },
               { id: 'user_subscription', label: 'Subscription Plan', icon: Briefcase },
               { id: 'user_trading_settings', label: 'Trading Settings', icon: Sliders },
@@ -2097,7 +2194,7 @@ export function App() {
                 <button
                   key={item.id}
                   onClick={() => setActiveTab(item.id)}
-                  className={`flex items-center gap-3 w-full px-3 py-3.5 rounded-none text-xs font-semibold transition-all duration-200 cursor-pointer ${
+                  className={`flex items-center gap-3 w-full px-3 py-2.5 rounded-none text-xs font-semibold transition-all duration-200 cursor-pointer ${
                     activeTab === item.id
                       ? 'bg-primary text-primary-foreground font-bold'
                       : 'text-muted-foreground hover:bg-muted/40 hover:text-foreground'
@@ -2124,15 +2221,7 @@ export function App() {
               </div>
             )}
 
-            <div className="bg-card border border-border p-4 rounded-none">
-              <div className="flex items-center justify-between text-xs text-muted-foreground">
-                <span>Active Bots Capital</span>
-                <Sliders className="w-3.5 h-3.5" />
-              </div>
-              <p className="text-xl font-bold mt-1 text-foreground">
-                ₹{strategies.filter(s => s.status === 'active').reduce((acc, s) => acc + s.capital, 0).toLocaleString()}
-              </p>
-            </div>
+
             
             <button
               onClick={handleLogout}
@@ -2218,6 +2307,7 @@ export function App() {
                 ) : (
                   [
                     { id: 'user_dashboard', label: 'Dashboard Terminal', icon: LayoutDashboard },
+                    { id: 'user_strategies', label: 'Assets & Strategies', icon: Layers },
                     { id: 'user_broker', label: 'Broker Connection', icon: KeyRound },
                     { id: 'user_subscription', label: 'Subscription Plan', icon: Briefcase },
                     { id: 'user_trading_settings', label: 'Trading Settings', icon: Sliders },
@@ -2232,7 +2322,7 @@ export function App() {
                           setActiveTab(item.id);
                           setShowMobileSidebar(false);
                         }}
-                        className={`flex items-center gap-3 w-full px-3 py-3.5 rounded-none text-xs font-semibold transition-all duration-200 cursor-pointer ${
+                        className={`flex items-center gap-3 w-full px-3 py-2.5 rounded-none text-xs font-semibold transition-all duration-200 cursor-pointer ${
                           activeTab === item.id
                             ? 'bg-primary text-primary-foreground font-bold'
                             : 'text-muted-foreground hover:bg-muted/40 hover:text-foreground'
@@ -2260,15 +2350,7 @@ export function App() {
                   </div>
                 )}
 
-                <div className="bg-card border border-border p-4 rounded-none">
-                  <div className="flex items-center justify-between text-xs text-muted-foreground">
-                    <span>Active Bots Capital</span>
-                    <Sliders className="w-3.5 h-3.5" />
-                  </div>
-                  <p className="text-xl font-bold mt-1 text-foreground">
-                    ₹{strategies.filter(s => s.status === 'active').reduce((acc, s) => acc + s.capital, 0).toLocaleString()}
-                  </p>
-                </div>
+
                 
                 <button
                   onClick={() => {
@@ -2331,6 +2413,7 @@ export function App() {
                 } else {
                   const items = [
                     { id: 'user_dashboard', label: 'Dashboard Terminal', icon: LayoutDashboard },
+                    { id: 'user_strategies', label: 'Assets & Strategies', icon: Layers },
                     { id: 'user_broker', label: 'Broker Connection', icon: KeyRound },
                     { id: 'user_subscription', label: 'Subscription Plan', icon: Briefcase },
                     { id: 'user_trading_settings', label: 'Trading Settings', icon: Sliders },
@@ -3349,45 +3432,12 @@ export function App() {
 
           {/* ADMIN TAB 5: TRADING MANAGEMENT */}
           {activeTab === 'admin_trading' && (
-            <div className="flex flex-col gap-6">
-              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-border pb-4">
-                <div>
-                  <h2 className="text-lg font-bold text-foreground">Platform Trading Management</h2>
-                  <p className="text-xs text-muted-foreground">Monitor running strategy instances, view system-wide transaction metrics and order execution flows</p>
-                </div>
-              </div>
-
-              {/* Running Strategies Table */}
-              <div className="bg-card border border-border rounded-none p-5">
-                <h3 className="text-sm font-bold text-foreground mb-4">Active Deployments</h3>
-                <div className="space-y-3">
-                  {strategies.map(strat => (
-                    <div key={strat.id} className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 p-3 rounded-none border border-border bg-background/50 text-xs">
-                      <div>
-                        <p className="font-bold text-foreground">{strat.name}</p>
-                        <p className="text-muted-foreground text-[10px]">{strat.instrument} • {strat.type}</p>
-                      </div>
-                      <div className="flex flex-wrap items-center gap-3 sm:gap-4 w-full sm:w-auto justify-between sm:justify-end border-t sm:border-t-0 border-border/40 pt-2 sm:pt-0 mt-2 sm:mt-0">
-                        <span className="font-mono">Capital: ₹{strat.capital.toLocaleString()}</span>
-                        <span className={`font-mono font-bold ${strat.pnl >= 0 ? 'text-emerald-500' : 'text-rose-500'}`}>
-                          PNL: ₹{strat.pnl.toLocaleString()}
-                        </span>
-                        <button
-                          onClick={() => handleToggleStrategy(strat.id)}
-                          className={`px-3 py-1.5 rounded-none font-bold cursor-pointer ${
-                            strat.status === 'active'
-                              ? 'bg-rose-500/10 text-rose-500 border border-rose-500/20'
-                              : 'bg-emerald-500/10 text-emerald-500 border border-emerald-500/20'
-                          }`}
-                        >
-                          {strat.status === 'active' ? 'Stop' : 'Start'}
-                        </button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
+            <AdminTrading
+              strategies={strategies}
+              handleToggleStrategy={handleToggleStrategy}
+              handleCreateStrategy={handleCreateStrategyAdmin}
+              handleDeleteStrategy={handleDeleteStrategyAdmin}
+            />
           )}
 
           {/* ADMIN TAB 6: RISK MANAGEMENT */}
@@ -3981,7 +4031,16 @@ export function App() {
             </div>
           )}
 
-          {/* USER TAB 2: BROKER CONNECTION */}
+          {/* USER TAB 2: ASSETS & STRATEGIES */}
+          {activeTab === 'user_strategies' && (
+            <UserStrategies
+              strategies={strategies}
+              handleSaveStrategy={handleSaveStrategy}
+              addToast={addToast}
+            />
+          )}
+
+          {/* USER TAB 3: BROKER CONNECTION */}
           {activeTab === 'user_broker' && (
             <div className="flex flex-col gap-6">
               <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-border pb-4">

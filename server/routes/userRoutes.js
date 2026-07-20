@@ -14,5 +14,6 @@ router.delete('/credentials/:id', authenticateToken, userController.deleteCreden
 // Strategies
 router.get('/strategies', authenticateToken, userController.getStrategies);
 router.post('/strategies/toggle', authenticateToken, userController.toggleStrategy);
+router.post('/strategies/save', authenticateToken, userController.saveUserStrategy);
 
 module.exports = router;

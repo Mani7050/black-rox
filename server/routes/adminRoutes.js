@@ -29,4 +29,10 @@ router.post('/signals/delete', authenticateToken, requireAdmin, adminController.
 // Emergency
 router.post('/square-off', authenticateToken, requireAdmin, adminController.squareOff);
 
+// Strategy Management
+router.post('/strategies', authenticateToken, requireAdmin, adminController.createStrategy);
+router.post('/strategies/update', authenticateToken, requireAdmin, adminController.updateStrategy);
+router.post('/strategies/delete', authenticateToken, requireAdmin, adminController.deleteStrategy);
+router.post('/strategies/toggle', authenticateToken, requireAdmin, adminController.toggleStrategy);
+
 module.exports = router;
