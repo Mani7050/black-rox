@@ -105,7 +105,10 @@ export interface User {
   role: 'admin' | 'user';
   lotMultiplier: number;
   status?: 'active' | 'suspended';
-  planId?: string;
+  planId?: string | null;
+  hasActivePlan?: boolean;
+  trialActivated?: boolean;
+  trialEndsAt?: string;
   createdAt?: string;
   lastLogin?: string;
   riskSettings?: {

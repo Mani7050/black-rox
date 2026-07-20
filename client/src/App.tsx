@@ -52,7 +52,10 @@ import {
   MoreVertical,
   LayoutGrid,
   List,
-  Menu
+  Menu,
+  Gift,
+  Sparkles,
+  ArrowRight
 } from 'lucide-react';
 import UserStrategies from './pages/user/UserStrategies';
 import AdminTrading from './pages/admin/AdminTrading';
@@ -165,9 +168,12 @@ interface User {
   role: 'admin' | 'user';
   lotMultiplier: number;
   status?: 'active' | 'suspended';
+  planId?: string | null;
+  hasActivePlan?: boolean;
+  trialActivated?: boolean;
+  trialEndsAt?: string;
   createdAt?: string;
   lastLogin?: string;
-  planId?: string;
   riskSettings?: {
     defaultLotSize: number;
     dailyRiskLimit: number;
@@ -1729,6 +1735,30 @@ export function App() {
     }
   };
 
+  // API Call: User Activate Plan (7-Day Trial or Paid Subscription)
+  const handleActivatePlan = async (planId: string) => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/user/activate-plan`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${authToken}`
+        },
+        body: JSON.stringify({ planId })
+      });
+      if (response.ok) {
+        const result = await response.json();
+        setUser(result.user);
+        addToast('success', 'Plan Activated', planId === 'plan_trial' ? '7-Day Free Trial activated! Trading terminal unlocked.' : 'Subscription plan activated successfully!');
+      } else {
+        const err = await response.json();
+        addToast('error', 'Activation Failed', err.error || 'Could not activate plan.');
+      }
+    } catch (e) {
+      addToast('error', 'Connection Error', 'Could not reach server to activate plan.');
+    }
+  };
+
   // API Call: Admin Create Strategy Template
   const handleCreateStrategyAdmin = async (data: { asset: string; assetType: string; name: string; strategyCode: string; quantity: number; limit: number; description: string }) => {
     try {
@@ -2550,7 +2580,83 @@ export function App() {
           </div>
 
         {/* Dashboard Content area */}
-        <main className="flex-1 overflow-y-auto pb-24 md:pb-8 p-4 sm:p-6 bg-muted/20">
+        <main className="flex-1 overflow-y-auto pb-24 md:pb-8 p-4 sm:p-6 bg-muted/20 relative">
+          {/* Locked Terminal Overlay for New / Planless Users */}
+          {user?.role === 'user' && !user?.hasActivePlan && !user?.planId && (
+            <div className="fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex items-center justify-center p-4 animate-in fade-in duration-200">
+              <div className="bg-card border border-border w-full max-w-xl p-8 rounded-none shadow-2xl relative text-center">
+                <div className="w-16 h-16 bg-primary/15 border border-primary/30 text-primary rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Lock className="w-8 h-8 animate-pulse" />
+                </div>
+                <h3 className="text-2xl font-black text-foreground tracking-tight mb-1">
+                  Trading Terminal Locked
+                </h3>
+                <p className="text-xs text-muted-foreground max-w-md mx-auto leading-relaxed mb-6">
+                  Welcome to <span className="font-bold text-foreground">BlackRox Algo Terminal</span>! To unlock real-time algo execution, live P&L monitoring, and strategy controls, please choose an activation option:
+                </p>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 text-left">
+                  {/* Option 1: 7-Day Free Trial */}
+                  <div className="bg-background border-2 border-primary/50 p-5 rounded-none flex flex-col justify-between hover:border-primary transition-all relative group shadow-lg">
+                    <div className="absolute -top-3 -right-2 bg-primary text-primary-foreground text-[9px] font-black uppercase tracking-wider px-3 py-1 shadow">
+                      7 DAYS FREE
+                    </div>
+                    <div>
+                      <div className="flex items-center gap-2 mb-2">
+                        <Gift className="w-5 h-5 text-primary shrink-0" />
+                        <h4 className="font-extrabold text-sm text-foreground">7-Day Free Trial</h4>
+                      </div>
+                      <p className="text-[11px] text-muted-foreground leading-relaxed mb-4">
+                        Instant 7-day trial pass. Test all automated strategies, live market scanners, and Demat account API connection.
+                      </p>
+                      <div className="text-xl font-black text-emerald-500 font-mono">
+                        ₹0 <span className="text-xs font-normal text-muted-foreground">/ 7 Days</span>
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => handleActivatePlan('plan_trial')}
+                      className="w-full mt-5 py-3 bg-primary text-primary-foreground font-black text-xs rounded-none cursor-pointer hover:opacity-90 transition-opacity flex items-center justify-center gap-2 shadow"
+                    >
+                      <Sparkles className="w-4 h-4" />
+                      ACTIVATE 7 DAYS FREE
+                    </button>
+                  </div>
+
+                  {/* Option 2: Subscription Plan */}
+                  <div className="bg-background border border-border p-5 rounded-none flex flex-col justify-between hover:border-foreground/40 transition-all text-left">
+                    <div>
+                      <div className="flex items-center gap-2 mb-2">
+                        <CreditCard className="w-5 h-5 text-sky-500 shrink-0" />
+                        <h4 className="font-extrabold text-sm text-foreground">Choose Paid Plan</h4>
+                      </div>
+                      <p className="text-[11px] text-muted-foreground leading-relaxed mb-4">
+                        Get Basic, Pro, or VIP subscription for multi-month algorithmic execution capping and priority order fills.
+                      </p>
+                      <div className="text-xl font-black text-foreground font-mono">
+                        From ₹1,999 <span className="text-xs font-normal text-muted-foreground">/ mo</span>
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => {
+                        setActiveTab('user_subscription');
+                        handleActivatePlan('plan_basic');
+                      }}
+                      className="w-full mt-5 py-3 bg-muted text-foreground border border-border font-black text-xs rounded-none cursor-pointer hover:bg-muted/80 transition-colors flex items-center justify-center gap-2"
+                    >
+                      <ArrowRight className="w-4 h-4" />
+                      VIEW PAID PLANS
+                    </button>
+                  </div>
+                </div>
+
+                <div className="mt-6 pt-4 border-t border-border/60 text-center">
+                  <p className="text-[10px] text-muted-foreground">
+                    Questions or custom requirements? Contact our support desk to assist with plan activation.
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
           
           {/* ================= ADMIN TABS ================= */}
           

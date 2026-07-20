@@ -45,7 +45,10 @@ exports.login = (req, res) => {
         email: user.email,
         role: user.role,
         lotMultiplier: user.lotMultiplier || 1.0,
-        planId: user.planId,
+        planId: user.planId || null,
+        hasActivePlan: user.role === 'admin' ? true : Boolean(user.hasActivePlan || user.planId),
+        trialActivated: Boolean(user.trialActivated),
+        trialEndsAt: user.trialEndsAt,
         riskSettings: user.riskSettings || defaultRiskSettings
       }
     });
@@ -77,7 +80,9 @@ exports.signup = (req, res) => {
     password: hashedPassword,
     role: 'user',
     status: 'active',
-    planId: 'plan_trial', // Auto assign trial plan
+    planId: null, // New users start with no active plan until activated
+    hasActivePlan: false,
+    trialActivated: false,
     createdAt: new Date().toISOString(),
     lastLogin: new Date().toISOString(),
     lotMultiplier: 1.0,
@@ -103,7 +108,9 @@ exports.signup = (req, res) => {
       email: newUser.email,
       role: newUser.role,
       lotMultiplier: newUser.lotMultiplier,
-      planId: newUser.planId,
+      planId: null,
+      hasActivePlan: false,
+      trialActivated: false,
       riskSettings: newUser.riskSettings
     }
   });

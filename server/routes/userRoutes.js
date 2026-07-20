@@ -5,6 +5,7 @@ const userController = require('../controllers/userController');
 
 router.post('/settings', authenticateToken, userController.updateSettings);
 router.post('/risk-settings', authenticateToken, userController.updateRiskSettings);
+router.post('/activate-plan', authenticateToken, userController.activatePlan);
 
 // Credentials
 router.get('/credentials', authenticateToken, userController.getCredentials);

@@ -188,3 +188,39 @@ exports.saveUserStrategy = (req, res) => {
   addLog('success', 'User', `Saved asset strategy config for ${targetStrat.asset || targetStrat.name} (${targetStrat.strategyCode})`);
   res.json({ success: true, strategy: targetStrat });
 };
+
+// POST /api/user/activate-plan — Activate 7-day trial or paid subscription plan
+exports.activatePlan = (req, res) => {
+  const { planId } = req.body;
+  if (!planId) return res.status(400).json({ error: 'Plan ID is required' });
+
+  const targetUser = data.users.find(u => u.id === req.user.id);
+  if (!targetUser) return res.status(404).json({ error: 'User not found' });
+
+  targetUser.planId = planId;
+  targetUser.hasActivePlan = true;
+  if (planId === 'plan_trial') {
+    targetUser.trialActivated = true;
+    targetUser.trialEndsAt = new Date(Date.now() + 7 * 86400000).toISOString();
+  }
+
+  saveDB();
+  broadcast({ type: 'USER_PLAN_ACTIVATED', data: { userId: targetUser.id, planId: targetUser.planId } });
+  addLog('success', 'User', `User ${targetUser.name} activated plan: ${planId}`);
+
+  return res.json({
+    success: true,
+    user: {
+      id: targetUser.id,
+      name: targetUser.name,
+      email: targetUser.email,
+      role: targetUser.role,
+      planId: targetUser.planId,
+      hasActivePlan: true,
+      trialActivated: targetUser.trialActivated,
+      trialEndsAt: targetUser.trialEndsAt,
+      lotMultiplier: targetUser.lotMultiplier || 1.0,
+      riskSettings: targetUser.riskSettings || defaultRiskSettings
+    }
+  });
+};
