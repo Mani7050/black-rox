@@ -2165,9 +2165,9 @@ export function App() {
       </div>
 
       {/* Sidebar */}
-      <aside className="w-72 border-r border-border bg-background flex flex-col shrink-0 h-screen sticky top-0 hidden md:flex transition-colors duration-300">
+      <aside className="w-72 border-r border-border bg-muted/30 flex flex-col shrink-0 h-screen sticky top-0 hidden md:flex transition-colors duration-300">
         {/* Logo Branding inside Sidebar */}
-        <div className="h-[73px] border-b border-border px-6 flex items-center gap-3 bg-background shrink-0">
+        <div className="h-[73px] border-b border-border px-6 flex items-center gap-3 bg-muted/30 shrink-0">
           <div className="bg-primary p-2 flex items-center justify-center shrink-0">
             <Cpu className="w-5 h-5 text-primary-foreground animate-pulse" />
           </div>
@@ -2239,7 +2239,7 @@ export function App() {
         </div>
 
         {/* Sidebar Footer Section */}
-        <div className="p-3 border-t border-border flex flex-col gap-2 shrink-0 bg-background">
+        <div className="p-3 border-t border-border flex flex-col gap-2 shrink-0 bg-muted/30">
           {/* Bottom Settings Link */}
           {user?.role === 'admin' && (
             <button
@@ -2343,9 +2343,9 @@ export function App() {
               onClick={() => setShowMobileSidebar(false)}
             />
             {/* Drawer Content container */}
-            <aside className="relative w-72 bg-background border-r border-border h-full flex flex-col animate-slide-in-right shadow-2xl z-10 transition-colors duration-300">
+            <aside className="relative w-72 bg-muted/30 border-r border-border h-full flex flex-col animate-slide-in-right shadow-2xl z-10 transition-colors duration-300">
               {/* Close button inside sidebar header */}
-              <div className="h-[73px] border-b border-border px-6 flex items-center justify-between bg-background shrink-0">
+              <div className="h-[73px] border-b border-border px-6 flex items-center justify-between bg-muted/30 shrink-0">
                 <div className="flex items-center gap-3">
                   <div className="bg-primary p-2 flex items-center justify-center shrink-0">
                     <Cpu className="w-5 h-5 text-primary-foreground animate-pulse" />
@@ -2433,7 +2433,7 @@ export function App() {
               </div>
 
               {/* Bottom Actions inside Mobile Drawer */}
-              <div className="p-3 border-t border-border flex flex-col gap-2 shrink-0 bg-background">
+              <div className="p-3 border-t border-border flex flex-col gap-2 shrink-0 bg-muted/30">
                 {user?.role === 'admin' && (
                   <button
                     onClick={() => {
