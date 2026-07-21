@@ -2276,9 +2276,9 @@ export function App() {
               </DropdownMenuTrigger>
               
               <DropdownMenuContent 
-                align="start" 
-                side="top" 
-                sideOffset={8}
+                align="end" 
+                side="right" 
+                sideOffset={12}
                 className="w-64 p-2 bg-card border border-border shadow-2xl rounded-xl z-50 animate-in fade-in-50 zoom-in-95"
               >
                 {/* Profile Header inside Popover */}
