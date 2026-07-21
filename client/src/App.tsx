@@ -2178,7 +2178,7 @@ export function App() {
             <p className="text-[9px] text-muted-foreground mt-0.5">High-Frequency Algo Terminal</p>
           </div>
         </div>
-        <div className="flex-1 py-4 px-3 flex flex-col gap-0.5 overflow-y-auto scrollbar-none">
+        <div className="flex-1 py-4 px-3 flex flex-col gap-1 overflow-y-auto scrollbar-none">
           {user?.role === 'admin' ? (
             [
               { id: 'admin_dashboard', label: 'Dashboard', icon: LayoutDashboard },
@@ -2198,7 +2198,7 @@ export function App() {
                 <button
                   key={item.id}
                   onClick={() => setActiveTab(item.id)}
-                  className={`flex items-center gap-3 w-full px-3 py-1.5 rounded-none text-xs font-semibold transition-all duration-200 cursor-pointer ${
+                  className={`flex items-center gap-3 w-full px-3 py-2.5 rounded-none text-xs font-semibold transition-all duration-200 cursor-pointer ${
                     activeTab === item.id
                       ? 'bg-primary text-primary-foreground font-bold'
                       : 'text-muted-foreground hover:bg-muted/40 hover:text-foreground'
@@ -2224,7 +2224,7 @@ export function App() {
                 <button
                   key={item.id}
                   onClick={() => setActiveTab(item.id)}
-                  className={`flex items-center gap-3 w-full px-3 py-1.5 rounded-none text-xs font-semibold transition-all duration-200 cursor-pointer ${
+                  className={`flex items-center gap-3 w-full px-3 py-2.5 rounded-none text-xs font-semibold transition-all duration-200 cursor-pointer ${
                     activeTab === item.id
                       ? 'bg-primary text-primary-foreground font-bold'
                       : 'text-muted-foreground hover:bg-muted/40 hover:text-foreground'
@@ -2244,7 +2244,7 @@ export function App() {
           {user?.role === 'admin' && (
             <button
               onClick={() => setActiveTab('admin_settings')}
-              className={`flex items-center gap-3 w-full px-3 py-1.5 rounded-none text-xs font-semibold transition-all duration-200 cursor-pointer ${
+              className={`flex items-center gap-3 w-full px-3 py-2.5 rounded-none text-xs font-semibold transition-all duration-200 cursor-pointer ${
                 activeTab === 'admin_settings'
                   ? 'bg-primary text-primary-foreground font-bold'
                   : 'text-muted-foreground hover:bg-muted/40 hover:text-foreground'
@@ -2366,7 +2366,7 @@ export function App() {
               </div>
               
               {/* Tab Items List */}
-              <div className="flex-1 py-4 px-3 flex flex-col gap-0.5 overflow-y-auto scrollbar-none">
+              <div className="flex-1 py-4 px-3 flex flex-col gap-1 overflow-y-auto scrollbar-none">
                 {user?.role === 'admin' ? (
                   [
                     { id: 'admin_dashboard', label: 'Dashboard', icon: LayoutDashboard },
@@ -2389,7 +2389,7 @@ export function App() {
                           setActiveTab(item.id);
                           setShowMobileSidebar(false);
                         }}
-                        className={`flex items-center gap-3 w-full px-3 py-1.5 rounded-none text-xs font-semibold transition-all duration-200 cursor-pointer ${
+                        className={`flex items-center gap-3 w-full px-3 py-2.5 rounded-none text-xs font-semibold transition-all duration-200 cursor-pointer ${
                           activeTab === item.id
                             ? 'bg-primary text-primary-foreground font-bold'
                             : 'text-muted-foreground hover:bg-muted/40 hover:text-foreground'
@@ -2418,7 +2418,7 @@ export function App() {
                           setActiveTab(item.id);
                           setShowMobileSidebar(false);
                         }}
-                        className={`flex items-center gap-3 w-full px-3 py-1.5 rounded-none text-xs font-semibold transition-all duration-200 cursor-pointer ${
+                        className={`flex items-center gap-3 w-full px-3 py-2.5 rounded-none text-xs font-semibold transition-all duration-200 cursor-pointer ${
                           activeTab === item.id
                             ? 'bg-primary text-primary-foreground font-bold'
                             : 'text-muted-foreground hover:bg-muted/40 hover:text-foreground'
@@ -2440,7 +2440,7 @@ export function App() {
                       setActiveTab('admin_settings');
                       setShowMobileSidebar(false);
                     }}
-                    className={`flex items-center gap-3 w-full px-3 py-1.5 rounded-none text-xs font-semibold transition-all duration-200 cursor-pointer ${
+                    className={`flex items-center gap-3 w-full px-3 py-2.5 rounded-none text-xs font-semibold transition-all duration-200 cursor-pointer ${
                       activeTab === 'admin_settings'
                         ? 'bg-primary text-primary-foreground font-bold'
                         : 'text-muted-foreground hover:bg-muted/40 hover:text-foreground'
