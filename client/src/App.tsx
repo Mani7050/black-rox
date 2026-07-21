@@ -2191,7 +2191,6 @@ export function App() {
               { id: 'admin_payments', label: 'Payment Control', icon: CreditCard },
               { id: 'admin_reports', label: 'Reports & Sheets', icon: FileSpreadsheet },
               { id: 'admin_notifications', label: 'Notifications Center', icon: Bell },
-              { id: 'admin_settings', label: 'System Settings', icon: Settings },
               { id: 'admin_audit', label: 'Audit Logs', icon: Terminal }
             ].map(item => {
               const Icon = item.icon;
@@ -2199,7 +2198,7 @@ export function App() {
                 <button
                   key={item.id}
                   onClick={() => setActiveTab(item.id)}
-                  className={`flex items-center gap-3 w-full px-3 py-3 rounded-none text-xs font-semibold transition-all duration-200 cursor-pointer ${
+                  className={`flex items-center gap-3 w-full px-3 py-1.5 rounded-none text-xs font-semibold transition-all duration-200 cursor-pointer ${
                     activeTab === item.id
                       ? 'bg-primary text-primary-foreground font-bold'
                       : 'text-muted-foreground hover:bg-muted/40 hover:text-foreground'
@@ -2225,7 +2224,7 @@ export function App() {
                 <button
                   key={item.id}
                   onClick={() => setActiveTab(item.id)}
-                  className={`flex items-center gap-3 w-full px-3 py-2.5 rounded-none text-xs font-semibold transition-all duration-200 cursor-pointer ${
+                  className={`flex items-center gap-3 w-full px-3 py-1.5 rounded-none text-xs font-semibold transition-all duration-200 cursor-pointer ${
                     activeTab === item.id
                       ? 'bg-primary text-primary-foreground font-bold'
                       : 'text-muted-foreground hover:bg-muted/40 hover:text-foreground'
@@ -2239,33 +2238,100 @@ export function App() {
           )}
         </div>
 
-        <div className="p-6 border-t border-border flex flex-col gap-4 shrink-0">
-            {user && (
-              <div className="flex items-center gap-3 bg-muted/40 border border-border p-3 rounded-none">
-                <div className="w-8 h-8 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center text-xs font-bold text-primary capitalize shrink-0">
-                  {user.name.charAt(0)}
-                </div>
-                <div className="overflow-hidden">
-                  <p className="text-xs font-bold text-foreground truncate">{user.name}</p>
-                  <p className="text-[10px] text-muted-foreground capitalize font-semibold">{user.role} account</p>
-                </div>
-              </div>
-            )}
-
-
-            
+        {/* Sidebar Footer Section */}
+        <div className="p-3 border-t border-border flex flex-col gap-2 shrink-0 bg-background">
+          {/* Bottom Settings Link */}
+          {user?.role === 'admin' && (
             <button
-              onClick={handleLogout}
-              className="w-full flex items-center justify-center gap-2 py-2.5 rounded-none border border-destructive/20 bg-destructive/5 hover:bg-destructive/10 text-destructive text-xs font-bold transition-colors cursor-pointer"
+              onClick={() => setActiveTab('admin_settings')}
+              className={`flex items-center gap-3 w-full px-3 py-1.5 rounded-none text-xs font-semibold transition-all duration-200 cursor-pointer ${
+                activeTab === 'admin_settings'
+                  ? 'bg-primary text-primary-foreground font-bold'
+                  : 'text-muted-foreground hover:bg-muted/40 hover:text-foreground'
+              }`}
             >
-              <LogOut className="w-3.5 h-3.5 shrink-0" />
-              Sign Out Session
+              <Settings className="w-4 h-4 shrink-0" />
+              Settings
             </button>
+          )}
 
-            <div className="text-center">
-              <p className="text-[10px] text-muted-foreground/60">v0.0.1 • Connected to local server</p>
-            </div>
-          </div>
+          {/* User Profile Box with 3-Dots Dropdown Menu */}
+          {user && (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <div className="flex items-center justify-between p-2.5 bg-muted/20 hover:bg-muted/50 border border-border/80 transition-colors cursor-pointer group select-none">
+                  <div className="flex items-center gap-3 overflow-hidden">
+                    <div className="w-9 h-9 rounded-full bg-muted border border-border flex items-center justify-center text-xs font-bold text-foreground shrink-0 uppercase shadow-xs">
+                      {user.name ? user.name.split(' ').map((n: string) => n[0]).join('').slice(0, 2) : 'AU'}
+                    </div>
+                    <div className="overflow-hidden leading-tight">
+                      <p className="text-xs font-bold text-foreground truncate">{user.name}</p>
+                      <p className="text-[10px] text-muted-foreground truncate">{user.email || `${user.role}@rommo.com`}</p>
+                    </div>
+                  </div>
+                  <button className="p-1 rounded-none text-muted-foreground group-hover:text-foreground hover:bg-muted shrink-0 transition-colors">
+                    <MoreVertical className="w-4 h-4" />
+                  </button>
+                </div>
+              </DropdownMenuTrigger>
+              
+              <DropdownMenuContent 
+                align="start" 
+                side="top" 
+                sideOffset={8}
+                className="w-64 p-2 bg-card border border-border shadow-2xl rounded-xl z-50 animate-in fade-in-50 zoom-in-95"
+              >
+                {/* Profile Header inside Popover */}
+                <div className="flex items-center gap-3 p-2.5 pb-3">
+                  <div className="w-10 h-10 rounded-full bg-muted border border-border flex items-center justify-center text-xs font-bold text-foreground shrink-0 uppercase shadow-xs">
+                    {user.name ? user.name.split(' ').map((n: string) => n[0]).join('').slice(0, 2) : 'AU'}
+                  </div>
+                  <div className="overflow-hidden leading-tight">
+                    <p className="text-xs font-bold text-foreground truncate">{user.name}</p>
+                    <p className="text-[11px] text-muted-foreground truncate">{user.email || `${user.role}@rommo.com`}</p>
+                  </div>
+                </div>
+
+                <DropdownMenuSeparator className="my-1 bg-border/60" />
+
+                {/* Change Password item */}
+                <DropdownMenuItem
+                  onClick={() => {
+                    if (user.role === 'admin') setActiveTab('admin_settings');
+                    else setActiveTab('user_profile');
+                  }}
+                  className="flex items-center gap-3 px-3 py-2.5 text-xs font-medium cursor-pointer rounded-lg hover:bg-muted focus:bg-muted text-foreground transition-colors"
+                >
+                  <Lock className="w-4 h-4 text-muted-foreground shrink-0" />
+                  <span>Change Password</span>
+                </DropdownMenuItem>
+
+                {/* Notifications item */}
+                <DropdownMenuItem
+                  onClick={() => {
+                    if (user.role === 'admin') setActiveTab('admin_notifications');
+                    else setActiveTab('user_dashboard');
+                  }}
+                  className="flex items-center gap-3 px-3 py-2.5 text-xs font-medium cursor-pointer rounded-lg hover:bg-muted focus:bg-muted text-foreground transition-colors"
+                >
+                  <Bell className="w-4 h-4 text-muted-foreground shrink-0" />
+                  <span>Notifications</span>
+                </DropdownMenuItem>
+
+                <DropdownMenuSeparator className="my-1 bg-border/60" />
+
+                {/* Log out item with red text & icon */}
+                <DropdownMenuItem
+                  onClick={handleLogout}
+                  className="flex items-center gap-3 px-3 py-2.5 text-xs font-semibold cursor-pointer rounded-lg text-rose-500 hover:bg-rose-500/10 focus:bg-rose-500/10 focus:text-rose-500 transition-colors"
+                >
+                  <LogOut className="w-4 h-4 text-rose-500 shrink-0" />
+                  <span>Log out</span>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          )}
+        </div>
         </aside>
 
         {/* Mobile Sidebar Drawer overlay */}
@@ -2313,7 +2379,6 @@ export function App() {
                     { id: 'admin_payments', label: 'Payment Control', icon: CreditCard },
                     { id: 'admin_reports', label: 'Reports & Sheets', icon: FileSpreadsheet },
                     { id: 'admin_notifications', label: 'Notifications Center', icon: Bell },
-                    { id: 'admin_settings', label: 'System Settings', icon: Settings },
                     { id: 'admin_audit', label: 'Audit Logs', icon: Terminal }
                   ].map(item => {
                     const Icon = item.icon;
@@ -2324,7 +2389,7 @@ export function App() {
                           setActiveTab(item.id);
                           setShowMobileSidebar(false);
                         }}
-                        className={`flex items-center gap-3 w-full px-3 py-3 rounded-none text-xs font-semibold transition-all duration-200 cursor-pointer ${
+                        className={`flex items-center gap-3 w-full px-3 py-1.5 rounded-none text-xs font-semibold transition-all duration-200 cursor-pointer ${
                           activeTab === item.id
                             ? 'bg-primary text-primary-foreground font-bold'
                             : 'text-muted-foreground hover:bg-muted/40 hover:text-foreground'
@@ -2353,7 +2418,7 @@ export function App() {
                           setActiveTab(item.id);
                           setShowMobileSidebar(false);
                         }}
-                        className={`flex items-center gap-3 w-full px-3 py-2.5 rounded-none text-xs font-semibold transition-all duration-200 cursor-pointer ${
+                        className={`flex items-center gap-3 w-full px-3 py-1.5 rounded-none text-xs font-semibold transition-all duration-200 cursor-pointer ${
                           activeTab === item.id
                             ? 'bg-primary text-primary-foreground font-bold'
                             : 'text-muted-foreground hover:bg-muted/40 hover:text-foreground'
@@ -2368,35 +2433,100 @@ export function App() {
               </div>
 
               {/* Bottom Actions inside Mobile Drawer */}
-              <div className="p-6 border-t border-border flex flex-col gap-4 shrink-0">
-                {user && (
-                  <div className="flex items-center gap-3 bg-muted/40 border border-border p-3 rounded-none">
-                    <div className="w-8 h-8 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center text-xs font-bold text-primary capitalize shrink-0">
-                      {user.name.charAt(0)}
-                    </div>
-                    <div className="overflow-hidden">
-                      <p className="text-xs font-bold text-foreground truncate">{user.name}</p>
-                      <p className="text-[10px] text-muted-foreground capitalize font-semibold">{user.role} account</p>
-                    </div>
-                  </div>
+              <div className="p-3 border-t border-border flex flex-col gap-2 shrink-0 bg-background">
+                {user?.role === 'admin' && (
+                  <button
+                    onClick={() => {
+                      setActiveTab('admin_settings');
+                      setShowMobileSidebar(false);
+                    }}
+                    className={`flex items-center gap-3 w-full px-3 py-1.5 rounded-none text-xs font-semibold transition-all duration-200 cursor-pointer ${
+                      activeTab === 'admin_settings'
+                        ? 'bg-primary text-primary-foreground font-bold'
+                        : 'text-muted-foreground hover:bg-muted/40 hover:text-foreground'
+                    }`}
+                  >
+                    <Settings className="w-4 h-4 shrink-0" />
+                    Settings
+                  </button>
                 )}
 
+                {user && (
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <div className="flex items-center justify-between p-2.5 bg-muted/20 hover:bg-muted/50 border border-border/80 transition-colors cursor-pointer group select-none">
+                        <div className="flex items-center gap-3 overflow-hidden">
+                          <div className="w-9 h-9 rounded-full bg-muted border border-border flex items-center justify-center text-xs font-bold text-foreground shrink-0 uppercase shadow-xs">
+                            {user.name ? user.name.split(' ').map((n: string) => n[0]).join('').slice(0, 2) : 'AU'}
+                          </div>
+                          <div className="overflow-hidden leading-tight">
+                            <p className="text-xs font-bold text-foreground truncate">{user.name}</p>
+                            <p className="text-[10px] text-muted-foreground truncate">{user.email || `${user.role}@rommo.com`}</p>
+                          </div>
+                        </div>
+                        <button className="p-1 rounded-none text-muted-foreground group-hover:text-foreground hover:bg-muted shrink-0 transition-colors">
+                          <MoreVertical className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </DropdownMenuTrigger>
+                    
+                    <DropdownMenuContent 
+                      align="start" 
+                      side="top" 
+                      sideOffset={8}
+                      className="w-64 p-2 bg-card border border-border shadow-2xl rounded-xl z-50 animate-in fade-in-50 zoom-in-95"
+                    >
+                      <div className="flex items-center gap-3 p-2.5 pb-3">
+                        <div className="w-10 h-10 rounded-full bg-muted border border-border flex items-center justify-center text-xs font-bold text-foreground shrink-0 uppercase shadow-xs">
+                          {user.name ? user.name.split(' ').map((n: string) => n[0]).join('').slice(0, 2) : 'AU'}
+                        </div>
+                        <div className="overflow-hidden leading-tight">
+                          <p className="text-xs font-bold text-foreground truncate">{user.name}</p>
+                          <p className="text-[11px] text-muted-foreground truncate">{user.email || `${user.role}@rommo.com`}</p>
+                        </div>
+                      </div>
 
-                
-                <button
-                  onClick={() => {
-                    handleLogout();
-                    setShowMobileSidebar(false);
-                  }}
-                  className="w-full flex items-center justify-center gap-2 py-2.5 rounded-none border border-destructive/20 bg-destructive/5 hover:bg-destructive/10 text-destructive text-xs font-bold transition-colors cursor-pointer"
-                >
-                  <LogOut className="w-3.5 h-3.5 shrink-0" />
-                  Sign Out Session
-                </button>
+                      <DropdownMenuSeparator className="my-1 bg-border/60" />
 
-                <div className="text-center">
-                  <p className="text-[10px] text-muted-foreground/60">v0.0.1 • Connected to local server</p>
-                </div>
+                      <DropdownMenuItem
+                        onClick={() => {
+                          if (user.role === 'admin') setActiveTab('admin_settings');
+                          else setActiveTab('user_profile');
+                          setShowMobileSidebar(false);
+                        }}
+                        className="flex items-center gap-3 px-3 py-2.5 text-xs font-medium cursor-pointer rounded-lg hover:bg-muted focus:bg-muted text-foreground transition-colors"
+                      >
+                        <Lock className="w-4 h-4 text-muted-foreground shrink-0" />
+                        <span>Change Password</span>
+                      </DropdownMenuItem>
+
+                      <DropdownMenuItem
+                        onClick={() => {
+                          if (user.role === 'admin') setActiveTab('admin_notifications');
+                          else setActiveTab('user_dashboard');
+                          setShowMobileSidebar(false);
+                        }}
+                        className="flex items-center gap-3 px-3 py-2.5 text-xs font-medium cursor-pointer rounded-lg hover:bg-muted focus:bg-muted text-foreground transition-colors"
+                      >
+                        <Bell className="w-4 h-4 text-muted-foreground shrink-0" />
+                        <span>Notifications</span>
+                      </DropdownMenuItem>
+
+                      <DropdownMenuSeparator className="my-1 bg-border/60" />
+
+                      <DropdownMenuItem
+                        onClick={() => {
+                          handleLogout();
+                          setShowMobileSidebar(false);
+                        }}
+                        className="flex items-center gap-3 px-3 py-2.5 text-xs font-semibold cursor-pointer rounded-lg text-rose-500 hover:bg-rose-500/10 focus:bg-rose-500/10 focus:text-rose-500 transition-colors"
+                      >
+                        <LogOut className="w-4 h-4 text-rose-500 shrink-0" />
+                        <span>Log out</span>
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                )}
               </div>
             </aside>
           </div>
